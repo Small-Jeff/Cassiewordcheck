@@ -33,6 +33,14 @@ public partial class AboutWindow : Window
 ";
 
     private const string ChangelogText = @"
+v2.2.0（新功能）
+• 结果导出为文件（检查结果可存为 .txt）
+• Ctrl+Z / Ctrl+Y 撤销重做（支持清空/粘贴/加载文件等操作）
+• 批量打开多个文本文件（自动合并到输入框）
+• 检查历史记录（点击 🕐 查看最近 50 次检查，点击条目恢复文本）
+• 工具栏新增 📂 打开文件、🕐 历史按钮
+• 版本号升级至 2.2.0
+
 v2.1.1（性能与代码质量）
 • CheckText 不再被 GetStatistics 重复调用，每次输入检查少跑一遍全量分词
 • 建议面板结果缓存（Levenshtein 编辑距离结果按词缓存，词库重载时自动清除）

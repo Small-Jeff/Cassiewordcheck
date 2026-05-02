@@ -11,6 +11,9 @@ public partial class MainWindow : Window
     private readonly Settings _settings;
     private readonly LocalizationService _localization;
     private readonly Dictionary<string, string> _suggestionCache = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Stack<string> _undoStack = new();
+    private readonly Stack<string> _redoStack = new();
+    private readonly List<HistoryEntry> _checkHistory = new();
     private bool _isLanguageInit = true;
     private bool _suppressAnimation;
     private DateTime _lastBounceTime = DateTime.MinValue;
@@ -99,6 +102,23 @@ public partial class MainWindow : Window
             UpdateResult();
     }
 
+    /// <summary>保存当前输入到撤销栈，用于粘贴/清空/加载文件等操作</summary>
+    private void PushUndo()
+    {
+        var text = InputBox.Text;
+        if (_undoStack.Count == 0 || _undoStack.Peek() != text)
+            _undoStack.Push(text);
+        if (_undoStack.Count > 50)
+        {
+            var items = _undoStack.ToArray();
+            Array.Reverse(items);
+            _undoStack.Clear();
+            for (int i = items.Length - 50; i < items.Length; i++)
+                _undoStack.Push(items[i]);
+        }
+        _redoStack.Clear();
+    }
+
     private void UpdateResult()
     {
         var text = InputBox.Text;
@@ -118,6 +138,9 @@ public partial class MainWindow : Window
         UnavailableLabel.Text = string.Format(_localization["stats.unavailable"], unavailable);
         IgnoredLabel.Text = string.Format(_localization["stats.ignored"], ignored);
         CoverageLabel.Text = $"{coverage:F1}%";
+
+        // 保存到检查历史
+        SaveToHistory(text, available + unavailable, unavailable, coverage);
 
         // 进度条过渡
         var targetWidth = Math.Max(2, Math.Min(120, coverage * 1.2));
@@ -194,6 +217,7 @@ public partial class MainWindow : Window
     {
         if (InputBox.Text.Length == 0) return;
 
+        PushUndo();
         _suppressAnimation = true;
 
         // 输入框淡出
@@ -215,11 +239,39 @@ public partial class MainWindow : Window
         Animate(ResultCard, UIElement.OpacityProperty, 1, 0.5, 200, new QuadraticEase());
     }
 
-    // ── 退格检测 ─────────────────────────────────────────────────
+    // ── 退格 & 撤销/重做 ──────────────────────────────────────────
     private void OnInputPreviewKeyDown(object sender, KeyEventArgs e)
     {
         if (e.Key == Key.Back || e.Key == Key.Delete)
             _suppressAnimation = true;
+
+        // Ctrl+V 粘贴 → 保存撤销点
+        if (e.Key == Key.V && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+            PushUndo();
+
+        // Ctrl+Z 撤销
+        if (e.Key == Key.Z && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+        {
+            if (_undoStack.Count > 0)
+            {
+                _redoStack.Push(InputBox.Text);
+                InputBox.Text = _undoStack.Pop();
+                InputBox.CaretIndex = InputBox.Text.Length;
+            }
+            e.Handled = true;
+        }
+
+        // Ctrl+Y 重做
+        if (e.Key == Key.Y && (Keyboard.Modifiers & ModifierKeys.Control) != 0)
+        {
+            if (_redoStack.Count > 0)
+            {
+                _undoStack.Push(InputBox.Text);
+                InputBox.Text = _redoStack.Pop();
+                InputBox.CaretIndex = InputBox.Text.Length;
+            }
+            e.Handled = true;
+        }
     }
 
     private void OnInputPreviewKeyUp(object sender, KeyEventArgs e)
@@ -439,8 +491,142 @@ public partial class MainWindow : Window
         }
     }
 
+    // ── 导出结果 ──────────────────────────────────────────────────
+    private void OnExportResult(object sender, RoutedEventArgs e)
+    {
+        var text = new TextRange(ResultBox.Document.ContentStart, ResultBox.Document.ContentEnd).Text;
+        if (string.IsNullOrWhiteSpace(text)) return;
+
+        var dialog = new Microsoft.Win32.SaveFileDialog
+        {
+            Title = "导出检查结果",
+            Filter = "文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*",
+            DefaultExt = ".txt",
+            FileName = $"CWC_result_{DateTime.Now:yyyyMMdd_HHmmss}.txt",
+        };
+
+        if (dialog.ShowDialog() == true)
+        {
+            try
+            {
+                File.WriteAllText(dialog.FileName, text.TrimEnd('\r', '\n'));
+            }
+            catch { }
+        }
+    }
+
+    // ── 打开文件 ──────────────────────────────────────────────────
+    private void OnOpenFile(object sender, RoutedEventArgs e)
+    {
+        var dialog = new Microsoft.Win32.OpenFileDialog
+        {
+            Title = "选择文本文件",
+            Filter = "文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*",
+            Multiselect = true,
+            CheckFileExists = true,
+        };
+
+        if (dialog.ShowDialog() == true && dialog.FileNames.Length > 0)
+        {
+            PushUndo();
+
+            if (dialog.FileNames.Length == 1)
+            {
+                // 单个文件 → 直接加载到输入框
+                InputBox.Text = File.ReadAllText(dialog.FileName);
+            }
+            else
+            {
+                // 多个文件 → 合并显示，文件名做分隔
+                var parts = dialog.FileNames.Select(f =>
+                    $"===== {Path.GetFileName(f)} =====\n{File.ReadAllText(f)}");
+                InputBox.Text = string.Join("\n\n", parts);
+            }
+        }
+    }
+
+    // ── 检查历史 ──────────────────────────────────────────────────
+    private void OnToggleHistory(object sender, RoutedEventArgs e)
+    {
+        if (_checkHistory.Count == 0) return;
+
+        if (SuggestionsPanel.Visibility != Visibility.Visible ||
+            SuggestionsList.ItemsSource is not List<object>)
+        {
+            SuggestionsPanel.Visibility = Visibility.Visible;
+            SuggestionsPanel.MaxHeight = 300;
+            SuggestionsPanel.Opacity = 1;
+
+            var items = _checkHistory
+                .Select((h, i) => new
+                {
+                    // 复用建议面板的模板字段
+                    Original = $"🕐 {h.Time:HH:mm:ss}",
+                    SuggestionText = $"共 {h.Total} 词 · {h.Unavailable} 不可用 · {h.Coverage:F1}%",
+                    Text = h.Text,
+                    Index = i,
+                })
+                .Cast<object>()
+                .ToList();
+
+            SuggestionsList.ItemsSource = items;
+            SuggestionLabel.Text = "🕐 检查历史";
+        }
+        else
+        {
+            SuggestionsPanel.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    /// <summary>点击建议面板中的条目：历史项则恢复文本</summary>
+    private void OnItemClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is not FrameworkElement fe || fe.DataContext is null) return;
+
+        var dc = fe.DataContext;
+        var type = dc.GetType();
+
+        // 通过反射判断是否为历史项（有 Index 和 Text 属性）
+        var indexProp = type.GetProperty("Index");
+        var textProp = type.GetProperty("Text");
+        if (indexProp is null || textProp is null) return;
+
+        var index = (int)indexProp.GetValue(dc)!;
+        var text = (string)textProp.GetValue(dc)!;
+        if (index >= 0 && index < _checkHistory.Count)
+        {
+            PushUndo();
+            InputBox.Text = text;
+        }
+    }
+
+    /// <summary>从历史记录恢复文本</summary>
+    private void OnRestoreHistory(object sender, System.Windows.Input.MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.Tag is int index && index < _checkHistory.Count)
+        {
+            PushUndo();
+            InputBox.Text = _checkHistory[index].Text;
+        }
+    }
+
+    /// <summary>保存当前检查到历史记录（在 UpdateResult 中调用）</summary>
+    private void SaveToHistory(string text, int total, int unavailable, double coverage)
+    {
+        if (string.IsNullOrWhiteSpace(text)) return;
+
+        // 避免连续相同文本重复记录
+        if (_checkHistory.Count > 0 && _checkHistory[^1].Text == text) return;
+
+        _checkHistory.Add(new HistoryEntry(text, DateTime.Now, total, unavailable, coverage));
+        if (_checkHistory.Count > 50) // 最多保留 50 条
+            _checkHistory.RemoveAt(0);
+    }
+
     private record LanguageItem(string Display, string Code)
     {
         public override string ToString() => Display;
     }
+
+    private record HistoryEntry(string Text, DateTime Time, int Total, int Unavailable, double Coverage);
 }
