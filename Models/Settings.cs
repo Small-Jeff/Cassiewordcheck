@@ -24,10 +24,14 @@ public class Settings
     public Settings(string? filePath = null)
     {
         _filePath = filePath ?? Path.Combine(
-            AppDomain.CurrentDomain.BaseDirectory,
-            "appsettings.json");
+            GetAppDir(),
+            "data", "appsettings.json");
         Load();
     }
+
+    private static string GetAppDir() =>
+        Path.GetDirectoryName(Environment.ProcessPath)
+        ?? AppDomain.CurrentDomain.BaseDirectory;
 
     public void Load()
     {

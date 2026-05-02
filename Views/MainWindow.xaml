@@ -52,12 +52,10 @@
                     <Border Grid.Column="0"
                             Width="28" Height="28"
                             CornerRadius="8"
-                            Background="{StaticResource AccentGradientBrush}"
+                            Background="Transparent"
                             VerticalAlignment="Center">
-                        <TextBlock Text="C" FontWeight="Bold" FontSize="16"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" />
+                        <Image x:Name="ToolbarIcon" Width="28" Height="28"
+                               Stretch="UniformToFill" />
                     </Border>
 
                     <TextBlock Grid.Column="1"
@@ -368,8 +366,7 @@
                                     Margin="0,0,8,6"
                                     BorderBrush="{StaticResource BorderBrush}"
                                     BorderThickness="1"
-                                    Cursor="Hand"
-                                    MouseDown="OnItemClick">
+                                    Cursor="Hand">
                                 <StackPanel>
                                     <TextBlock FontWeight="SemiBold"
                                                Foreground="{StaticResource ErrorBrush}"

@@ -76,22 +76,21 @@
                         <ColumnDefinition Width="*" />
                     </Grid.ColumnDefinitions>
 
-                    <!-- 应用图标：渐变 + 发光 -->
+                    <!-- 应用图标 -->
                     <Border Grid.Column="0"
                             Width="52" Height="52"
                             CornerRadius="14"
                             Background="{StaticResource AccentGradientBrush}"
                             VerticalAlignment="Center"
-                            x:Name="AppIconBorder">
+                            x:Name="AppIconBorder"
+                            ClipToBounds="True">
                         <Border.Effect>
                             <DropShadowEffect BlurRadius="12" Opacity="0.4"
                                               ShadowDepth="2" Direction="270"
                                               Color="#6C5CE7" />
                         </Border.Effect>
-                        <TextBlock Text="C" FontWeight="Bold" FontSize="30"
-                                   Foreground="White"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center" />
+                        <Image x:Name="AppIconImage" Width="52" Height="52"
+                               Stretch="UniformToFill" />
                     </Border>
 
                     <StackPanel Grid.Column="1" Margin="18,0,0,0" VerticalAlignment="Center">

@@ -65,6 +65,16 @@
         <Setter Property="FontFamily" Value="{StaticResource TextFont}" />
     </Style>
 
+    <!-- ToolTip (暗色主题适配) -->
+    <Style TargetType="ToolTip">
+        <Setter Property="Background" Value="#2A2A35" />
+        <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+        <Setter Property="BorderBrush" Value="#3A3A45" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="HasDropShadow" Value="True" />
+    </Style>
+
     <!-- ============================================================
          Modern Button (with press scale + hover glow)
          ============================================================ -->

@@ -33,6 +33,16 @@ public partial class AboutWindow : Window
 ";
 
     private const string ChangelogText = @"
+v2.2.1（BUG 修复 & 优化）
+• 修复悬停 ToolTip 不显示的问题（新增暗色 ToolTip 样式）
+• 修复多次点击历史按钮导致建议面板内容不显示的问题
+• 修复不可用词建议标题被历史标题覆盖后不恢复的问题
+• 历史记录独立为窗口页面（点击 🕐 打开新窗口查看全部记录）
+• 历史记录持久化保存到 history.json（重启后保留）
+• 历史记录同时存储输入文本与检查结果
+• 白名单持久化修复（随设置保存/加载）
+• 版本号升级至 2.2.1
+
 v2.2.0（新功能）
 • 结果导出为文件（检查结果可存为 .txt）
 • Ctrl+Z / Ctrl+Y 撤销重做（支持清空/粘贴/加载文件等操作）
@@ -103,8 +113,9 @@ v1.0.0（初始版本）
 
     private void OnLoaded(object sender, RoutedEventArgs e)
     {
-        // 加载头像
+        // 加载头像 + 应用图标
         LoadAvatar();
+        LoadAppIcon();
 
         // ── 窗口入场：弹性缩放 + 淡入 ──
         var sb = new Storyboard();
@@ -151,9 +162,11 @@ v1.0.0（初始版本）
     {
         try
         {
-            // 尝试多个路径寻找头像
+            // 优先从 data/ 找头像，找不到再回退到根目录
             var imgPath = new[]
             {
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "qr.JPG"),
+                Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? ".", "data", "qr.JPG"),
                 Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr.JPG"),
                 Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? ".", "qr.JPG"),
                 Path.Combine(Directory.GetCurrentDirectory(), "qr.JPG"),
@@ -170,6 +183,29 @@ v1.0.0（初始版本）
             }
         }
         catch { /* 图片加载失败静默处理 */ }
+    }
+
+    private void LoadAppIcon()
+    {
+        try
+        {
+            var paths = new[]
+            {
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "AAA.JPG"),
+                Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? ".", "data", "AAA.JPG"),
+            };
+            var imgPath = paths.FirstOrDefault(File.Exists);
+            if (imgPath is not null)
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = new Uri(imgPath);
+                bitmap.EndInit();
+                AppIconImage.Source = bitmap;
+            }
+        }
+        catch { /* 静默 */ }
     }
 
     // ── 标签页切换 ────────────────────────────────────────────

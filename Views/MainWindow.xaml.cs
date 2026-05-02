@@ -1,4 +1,6 @@
 using System.Windows.Media.Animation;
+using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 using CassieWordCheck.Models;
 using CassieWordCheck.Services;
 
@@ -13,10 +15,17 @@ public partial class MainWindow : Window
     private readonly Dictionary<string, string> _suggestionCache = new(StringComparer.OrdinalIgnoreCase);
     private readonly Stack<string> _undoStack = new();
     private readonly Stack<string> _redoStack = new();
-    private readonly List<HistoryEntry> _checkHistory = new();
+    private readonly HistoryStore _historyStore = new();
+    private readonly DispatcherTimer _historyTimer = new();
+    private string _suggestionLabelOriginal = "";
     private bool _isLanguageInit = true;
     private bool _suppressAnimation;
     private DateTime _lastBounceTime = DateTime.MinValue;
+    // 历史快照缓存（每隔 3 分钟由 Timer 写入磁盘）
+    private string _snapshotText = "";
+    private string _snapshotResult = "";
+    private int _snapshotAvailable, _snapshotUnavailable, _snapshotIgnored;
+    private double _snapshotCoverage;
 
     public MainWindow()
     {
@@ -45,13 +54,22 @@ public partial class MainWindow : Window
         PopulateLanguages();
         _isLanguageInit = false;
 
+        _suggestionLabelOriginal = SuggestionLabel.Text;
         LoadWordListAsync();
         UpdateUILanguage();
+
+        // 每 3 分钟自动保存历史快照
+        _historyTimer.Interval = TimeSpan.FromMinutes(3);
+        _historyTimer.Tick += OnHistoryTimerTick;
+        _historyTimer.Start();
     }
 
     // ── 入场动画 ─────────────────────────────────────────────────
     private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
     {
+        // ── 加载工具栏图标 ──
+        LoadToolbarIcon();
+
         // ── 顶部工具栏：顶部滑入 ──
         ToolbarCard.Opacity = 0;
         var toolbarT = new TranslateTransform(0, -15);
@@ -93,6 +111,30 @@ public partial class MainWindow : Window
         // ── 统计栏 ──
         StatsBar.Opacity = 0;
         Animate(StatsBar, UIElement.OpacityProperty, 0, 1, 550, new QuadraticEase());
+    }
+
+    // ── 从 data/ 加载工具栏图标 ─────────────────────────────────
+    private void LoadToolbarIcon()
+    {
+        try
+        {
+            var paths = new[]
+            {
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "data", "AAA.JPG"),
+                Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? ".", "data", "AAA.JPG"),
+            };
+            var imgPath = paths.FirstOrDefault(File.Exists);
+            if (imgPath is not null)
+            {
+                var bitmap = new BitmapImage();
+                bitmap.BeginInit();
+                bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                bitmap.UriSource = new Uri(imgPath);
+                bitmap.EndInit();
+                ToolbarIcon.Source = bitmap;
+            }
+        }
+        catch { /* 静默 */ }
     }
 
     // ── 输入变化 ─────────────────────────────────────────────────
@@ -139,8 +181,13 @@ public partial class MainWindow : Window
         IgnoredLabel.Text = string.Format(_localization["stats.ignored"], ignored);
         CoverageLabel.Text = $"{coverage:F1}%";
 
-        // 保存到检查历史
-        SaveToHistory(text, available + unavailable, unavailable, coverage);
+        // 缓存当前快照（Timer 每隔 3 分钟自动写入磁盘）
+        _snapshotText = text;
+        _snapshotResult = new TextRange(ResultBox.Document.ContentStart, ResultBox.Document.ContentEnd).Text;
+        _snapshotAvailable = available;
+        _snapshotUnavailable = unavailable;
+        _snapshotIgnored = ignored;
+        _snapshotCoverage = coverage;
 
         // 进度条过渡
         var targetWidth = Math.Max(2, Math.Min(120, coverage * 1.2));
@@ -434,12 +481,12 @@ public partial class MainWindow : Window
     {
         var dialog = new WhitelistWindow(_wordlist, _localization);
         dialog.Owner = this;
-        if (dialog.ShowDialog() == true)
-        {
-            _settings.Whitelist = _wordlist.Whitelist.ToList();
-            _settings.Save();
-            UpdateResult();
-        }
+        dialog.ShowDialog();
+
+        // 窗口关闭时无条件保存白名单（WhitelistWindow 对 _wordlist 的修改是实时的）
+        _settings.Whitelist = _wordlist.Whitelist.ToList();
+        _settings.Save();
+        UpdateResult();
     }
 
     private void OnReloadWordlist(object sender, RoutedEventArgs e)
@@ -548,85 +595,30 @@ public partial class MainWindow : Window
     // ── 检查历史 ──────────────────────────────────────────────────
     private void OnToggleHistory(object sender, RoutedEventArgs e)
     {
-        if (_checkHistory.Count == 0) return;
+        // 恢复建议面板标题（修复 BUG：标题被历史覆盖后不恢复）
+        SuggestionLabel.Text = _suggestionLabelOriginal;
 
-        if (SuggestionsPanel.Visibility != Visibility.Visible ||
-            SuggestionsList.ItemsSource is not List<object>)
-        {
-            SuggestionsPanel.Visibility = Visibility.Visible;
-            SuggestionsPanel.MaxHeight = 300;
-            SuggestionsPanel.Opacity = 1;
-
-            var items = _checkHistory
-                .Select((h, i) => new
-                {
-                    // 复用建议面板的模板字段
-                    Original = $"🕐 {h.Time:HH:mm:ss}",
-                    SuggestionText = $"共 {h.Total} 词 · {h.Unavailable} 不可用 · {h.Coverage:F1}%",
-                    Text = h.Text,
-                    Index = i,
-                })
-                .Cast<object>()
-                .ToList();
-
-            SuggestionsList.ItemsSource = items;
-            SuggestionLabel.Text = "🕐 检查历史";
-        }
-        else
-        {
-            SuggestionsPanel.Visibility = Visibility.Collapsed;
-        }
-    }
-
-    /// <summary>点击建议面板中的条目：历史项则恢复文本</summary>
-    private void OnItemClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        if (sender is not FrameworkElement fe || fe.DataContext is null) return;
-
-        var dc = fe.DataContext;
-        var type = dc.GetType();
-
-        // 通过反射判断是否为历史项（有 Index 和 Text 属性）
-        var indexProp = type.GetProperty("Index");
-        var textProp = type.GetProperty("Text");
-        if (indexProp is null || textProp is null) return;
-
-        var index = (int)indexProp.GetValue(dc)!;
-        var text = (string)textProp.GetValue(dc)!;
-        if (index >= 0 && index < _checkHistory.Count)
+        var dialog = new HistoryWindow(_historyStore, text =>
         {
             PushUndo();
-            InputBox.Text = text;
-        }
-    }
-
-    /// <summary>从历史记录恢复文本</summary>
-    private void OnRestoreHistory(object sender, System.Windows.Input.MouseButtonEventArgs e)
-    {
-        if (sender is FrameworkElement fe && fe.Tag is int index && index < _checkHistory.Count)
+            Dispatcher.Invoke(() => InputBox.Text = text);
+        })
         {
-            PushUndo();
-            InputBox.Text = _checkHistory[index].Text;
-        }
+            Owner = this,
+        };
+        dialog.ShowDialog();
     }
 
-    /// <summary>保存当前检查到历史记录（在 UpdateResult 中调用）</summary>
-    private void SaveToHistory(string text, int total, int unavailable, double coverage)
+    /// <summary>每隔 3 分钟自动将当前快照写入历史记录</summary>
+    private void OnHistoryTimerTick(object? sender, EventArgs e)
     {
-        if (string.IsNullOrWhiteSpace(text)) return;
-
-        // 避免连续相同文本重复记录
-        if (_checkHistory.Count > 0 && _checkHistory[^1].Text == text) return;
-
-        _checkHistory.Add(new HistoryEntry(text, DateTime.Now, total, unavailable, coverage));
-        if (_checkHistory.Count > 50) // 最多保留 50 条
-            _checkHistory.RemoveAt(0);
+        if (string.IsNullOrWhiteSpace(_snapshotText)) return;
+        _historyStore.Add(_snapshotText, _snapshotResult,
+            _snapshotAvailable, _snapshotUnavailable, _snapshotIgnored, _snapshotCoverage);
     }
 
     private record LanguageItem(string Display, string Code)
     {
         public override string ToString() => Display;
     }
-
-    private record HistoryEntry(string Text, DateTime Time, int Total, int Unavailable, double Coverage);
 }

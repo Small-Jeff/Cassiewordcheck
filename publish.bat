@@ -11,6 +11,7 @@ echo ========================================
 echo   CassieWordCheck - Publish Package
 echo   Output: %PUBLISH_DIR%
 echo   Runtime: %RID% (Self-contained)
+echo   Data folder: data\ (统一封装)
 echo ========================================
 echo.
 
@@ -32,9 +33,23 @@ echo [3/4] Publishing single-file...
 call dotnet publish "%PROJ_DIR%%APP_NAME%.csproj" -c Release -r %RID% -o "%PUBLISH_DIR%" --verbosity normal
 if %errorlevel% neq 0 goto :err
 
-echo [4/4] Cleaning debug symbols...
+echo [4/4] Verifying output structure...
 if exist "%PUBLISH_DIR%*.pdb" del /q "%PUBLISH_DIR%*.pdb" 2>nul
 
+REM Show final dist structure
+echo.
+echo ====== Output structure ======
+if exist "%PUBLISH_DIR%CassieWordCheck.exe" (
+    echo   [exe]  CassieWordCheck.exe
+)
+if exist "%PUBLISH_DIR%data\" (
+    echo   [data] data\
+    dir /b "%PUBLISH_DIR%data\" 2>nul
+)
+if exist "%PUBLISH_DIR%Resources\" (
+    echo   [res]  Resources\Locales\
+)
+echo ===============================
 echo.
 echo ====== Done! Output in dist\ folder ======
 echo.
