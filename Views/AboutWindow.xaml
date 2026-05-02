@@ -108,8 +108,10 @@
                            Fill="{StaticResource BorderBrush}" Opacity="0.5" />
 
                 <!-- ═══ 标签页 ═══ -->
-                <Grid Grid.Row="2" Margin="0,0,0,16">
+                <Grid x:Name="TabGrid" Grid.Row="2" Margin="0,0,0,16">
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
@@ -155,117 +157,72 @@
                         </TextBlock>
                     </Border>
 
+                    <!-- 关于标签 -->
+                    <Border Grid.Column="2" Margin="28,0,0,0" Padding="0,0,0,8">
+                        <TextBlock x:Name="AboutInfoTab"
+                                   Text="关于"
+                                   FontSize="13" FontWeight="SemiBold"
+                                   Cursor="Hand"
+                                   MouseDown="OnShowAboutInfo">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                    <Style.Triggers>
+                                        <Trigger Property="Tag" Value="Active">
+                                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
+
+                    <!-- 声明标签 -->
+                    <Border Grid.Column="3" Margin="28,0,0,0" Padding="0,0,0,8">
+                        <TextBlock x:Name="DisclaimerTab"
+                                   Text="声明"
+                                   FontSize="13" FontWeight="SemiBold"
+                                   Cursor="Hand"
+                                   MouseDown="OnShowDisclaimer">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+                                    <Style.Triggers>
+                                        <Trigger Property="Tag" Value="Active">
+                                            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                                        </Trigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </Border>
+
                     <!-- 底部指示条 -->
-                    <Border Grid.Column="0" Grid.ColumnSpan="2"
+                    <Border x:Name="TabIndicator"
+                            Grid.Column="0" Grid.ColumnSpan="4"
                             Width="36" Height="2.5"
                             CornerRadius="2"
                             Background="{StaticResource AccentGradientBrush}"
                             HorizontalAlignment="Left"
                             VerticalAlignment="Bottom"
-                            Margin="0,0,0,0">
-                        <Border.Resources>
-                            <Storyboard x:Key="IndicatorMoveToChangelog">
-                                <ThicknessAnimation Storyboard.TargetProperty="Margin"
-                                                    To="114,0,0,0" Duration="0:0:0.3">
-                                    <ThicknessAnimation.EasingFunction>
-                                        <CubicEase EasingMode="EaseOut" />
-                                    </ThicknessAnimation.EasingFunction>
-                                </ThicknessAnimation>
-                            </Storyboard>
-                            <Storyboard x:Key="IndicatorMoveToFeatures">
-                                <ThicknessAnimation Storyboard.TargetProperty="Margin"
-                                                    To="0,0,0,0" Duration="0:0:0.3">
-                                    <ThicknessAnimation.EasingFunction>
-                                        <CubicEase EasingMode="EaseOut" />
-                                    </ThicknessAnimation.EasingFunction>
-                                </ThicknessAnimation>
-                            </Storyboard>
-                        </Border.Resources>
-                    </Border>
+                            Margin="0,0,0,0" />
                 </Grid>
 
-                <!-- ═══ 内容区域 ═══ -->
-                <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto"
-                              Padding="0,0,6,0" Margin="0,0,0,0">
-                    <TextBlock x:Name="ContentArea"
-                               TextWrapping="Wrap"
-                               FontSize="12.5"
-                               LineHeight="20"
-                               Opacity="0"
-                               Foreground="{StaticResource TextPrimaryBrush}">
-                        <TextBlock.RenderTransform>
-                            <TranslateTransform Y="12" />
-                        </TextBlock.RenderTransform>
-                    </TextBlock>
-                </ScrollViewer>
-
-                <!-- ═══ 底部：制作者信息 ═══ -->
-                <Border Grid.Row="4" Margin="0,16,0,0"
-                        x:Name="CreditsBorder"
-                        Background="{StaticResource BgBrush}"
-                        CornerRadius="10"
-                        Padding="14,12">
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" />
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
-
-                        <!-- 头像 -->
-                        <Border Grid.Column="0"
-                                Width="40" Height="40"
-                                CornerRadius="8"
-                                Background="{StaticResource SurfaceBrush}"
-                                BorderBrush="{StaticResource BorderBrush}"
-                                BorderThickness="1"
-                                VerticalAlignment="Center">
-                            <Border.RenderTransform>
-                                <RotateTransform x:Name="AvatarRotate" Angle="0" />
-                            </Border.RenderTransform>
-                            <Image x:Name="AvatarImage" Width="38" Height="38"
-                                   Stretch="UniformToFill" />
-                        </Border>
-
-                        <!-- 文字 -->
-                        <StackPanel Grid.Column="1" Margin="14,0,0,0"
-                                    VerticalAlignment="Center">
-                            <TextBlock FontSize="10.5" LineHeight="15"
-                                       Foreground="{StaticResource TextSecondaryBrush}">
-                                <Run Text="清然 (2816401189)" FontWeight="SemiBold" />
-                                <Run Text="· 紧急事件制作组" />
-                            </TextBlock>
-                            <TextBlock FontSize="10" LineHeight="14"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       Opacity="0.6">
-                                鸣谢：Awni、虚无 · 本项目由 AI 辅助制作
-                            </TextBlock>
-                        </StackPanel>
-
-                        <!-- 关闭按钮 -->
-                        <Border Grid.Column="2"
-                                Width="32" Height="32"
-                                CornerRadius="8"
-                                Background="Transparent"
-                                VerticalAlignment="Center"
-                                Cursor="Hand"
-                                MouseDown="OnClose">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Style.Triggers>
-                                        <Trigger Property="IsMouseOver" Value="True">
-                                            <Setter Property="Background" Value="{StaticResource BorderBrush}" />
-                                        </Trigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <TextBlock Text="✕" FontSize="13"
-                                       Foreground="{StaticResource TextSecondaryBrush}"
-                                       HorizontalAlignment="Center"
-                                       VerticalAlignment="Center" />
-                        </Border>
-                    </Grid>
-                </Border>
+                <!-- ═══ 内容区域（Markdown 渲染） ═══ -->
+                <FlowDocumentScrollViewer x:Name="ContentArea"
+                                          Grid.Row="3"
+                                          VerticalScrollBarVisibility="Auto"
+                                          Padding="0"
+                                          Margin="0"
+                                          Opacity="0"
+                                          Background="Transparent"
+                                          BorderThickness="0"
+                                          IsToolBarVisible="False"
+                                          PreviewMouseDown="OnContentPreviewMouseDown">
+                    <FlowDocumentScrollViewer.RenderTransform>
+                        <TranslateTransform Y="12" />
+                    </FlowDocumentScrollViewer.RenderTransform>
+                </FlowDocumentScrollViewer>
             </Grid>
         </Border>
     </Grid>

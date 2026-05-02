@@ -304,14 +304,13 @@
         <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
         <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
         <Setter Property="BorderBrush" Value="{StaticResource BorderBrush}" />
-        <Setter Property="Padding" Value="10,6" />
+        <Setter Property="Padding" Value="12,7" />
         <Setter Property="FontFamily" Value="{StaticResource TextFont}" />
         <Setter Property="FontSize" Value="13" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="ComboBox">
                     <Grid>
-                        <!-- ToggleButton handles the click-to-open behavior -->
                         <ToggleButton x:Name="ToggleButton"
                                       Content="{TemplateBinding SelectionBoxItem}"
                                       ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}"
@@ -337,16 +336,20 @@
                                                               HorizontalAlignment="Left"
                                                               VerticalAlignment="Center"
                                                               TextElement.Foreground="{StaticResource TextPrimaryBrush}" />
+                                            <!-- 倒三角箭头 -->
                                             <Path Grid.Column="1"
-                                                  Data="M0,0 L8,0 L4,6 Z"
+                                                  Data="M0,0 L8,0 L4,5 Z"
                                                   Fill="{StaticResource TextSecondaryBrush}"
+                                                  Width="8" Height="5"
+                                                  Stretch="Fill"
                                                   VerticalAlignment="Center"
-                                                  Margin="6,0,0,0" />
+                                                  Margin="8,0,2,0" />
                                         </Grid>
                                     </Border>
                                     <ControlTemplate.Triggers>
                                         <Trigger Property="IsMouseOver" Value="True">
                                             <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentLightBrush}" />
+                                            <Setter TargetName="border" Property="Background" Value="#23233A" />
                                         </Trigger>
                                         <Trigger Property="IsChecked" Value="True">
                                             <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
@@ -356,21 +359,24 @@
                             </ToggleButton.Template>
                         </ToggleButton>
 
-                        <!-- Dropdown popup with dark background -->
                         <Popup x:Name="PART_Popup"
                                IsOpen="{TemplateBinding IsDropDownOpen}"
                                Placement="Bottom"
                                AllowsTransparency="True"
                                Focusable="False"
                                HorizontalOffset="0"
-                               VerticalOffset="0">
-                            <Border Background="{StaticResource BgBrush}"
+                               VerticalOffset="0"
+                               PopupAnimation="Slide">
+                            <Border Background="{StaticResource SurfaceBrush}"
                                     BorderBrush="{StaticResource BorderBrush}"
                                     BorderThickness="1"
                                     CornerRadius="8"
                                     MaxHeight="300"
                                     MinWidth="{Binding ActualWidth, ElementName=ToggleButton}"
                                     Margin="0,4,0,0">
+                                <Border.Effect>
+                                    <DropShadowEffect BlurRadius="16" Opacity="0.4" ShadowDepth="4" Direction="270" Color="#000000" />
+                                </Border.Effect>
                                 <ScrollViewer>
                                     <ItemsPresenter />
                                 </ScrollViewer>
@@ -378,6 +384,40 @@
                         </Popup>
                     </Grid>
                 </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="ItemContainerStyle">
+            <Setter.Value>
+                <Style TargetType="ComboBoxItem">
+                    <Setter Property="Background" Value="Transparent" />
+                    <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                    <Setter Property="Padding" Value="12,8" />
+                    <Setter Property="FontSize" Value="13" />
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="ComboBoxItem">
+                                <Border x:Name="hoverBorder"
+                                        Background="{TemplateBinding Background}"
+                                        CornerRadius="6"
+                                        Padding="{TemplateBinding Padding}"
+                                        Margin="4,2"
+                                        SnapsToDevicePixels="True">
+                                    <ContentPresenter />
+                                </Border>
+                                <ControlTemplate.Triggers>
+                                    <Trigger Property="IsMouseOver" Value="True">
+                                        <Setter TargetName="hoverBorder" Property="Background" Value="{StaticResource SurfaceHoverBrush}" />
+                                    </Trigger>
+                                    <Trigger Property="IsSelected" Value="True">
+                                        <Setter TargetName="hoverBorder" Property="Background" Value="#1A1A2E" />
+                                        <Setter TargetName="hoverBorder" Property="BorderBrush" Value="{StaticResource AccentBrush}" />
+                                        <Setter TargetName="hoverBorder" Property="BorderThickness" Value="1" />
+                                    </Trigger>
+                                </ControlTemplate.Triggers>
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
             </Setter.Value>
         </Setter>
     </Style>

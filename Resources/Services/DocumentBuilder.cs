@@ -17,12 +17,12 @@ public static class DocumentBuilder
     {
         var doc = new FlowDocument
         {
-            FontFamily = new FontFamily("Segoe UI Variable Text, Segoe UI, sans-serif"),
+            FontFamily = new FontFamily("Cascadia Code, Consolas, monospace"),
             FontSize = fontSize,
             PageWidth = Math.Max(width - 32, 100),
             PagePadding = new Thickness(0),
             TextAlignment = TextAlignment.Left,
-            LineHeight = 1.5,
+            LineStackingStrategy = LineStackingStrategy.MaxHeight,
         };
 
         var paragraph = new Paragraph { Margin = new Thickness(0) };
@@ -31,8 +31,7 @@ public static class DocumentBuilder
         {
             if (r.Status == CheckStatus.Separator && r.Text == "\n")
             {
-                doc.Blocks.Add(paragraph);
-                paragraph = new Paragraph { Margin = new Thickness(0), LineHeight = 1.5 };
+                paragraph.Inlines.Add(new LineBreak());
                 continue;
             }
 

@@ -6,7 +6,8 @@
         MinWidth="680" MinHeight="420"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BgBrush}"
-        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextFormattingMode="Ideal"
+        RenderOptions.BitmapScalingMode="HighQuality"
         Loaded="OnMainWindowLoaded">
 
     <Grid Margin="24,16,24,16">
@@ -45,8 +46,6 @@
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
-                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <Border Grid.Column="0"
@@ -65,15 +64,7 @@
                                VerticalAlignment="Center"
                                Margin="12,0,0,0" />
 
-                    <ComboBox x:Name="LanguageSelector"
-                              Grid.Column="2"
-                              Style="{StaticResource ModernComboBox}"
-                              Width="120"
-                              Margin="0,0,10,0"
-                              VerticalAlignment="Center"
-                              SelectionChanged="OnLanguageChanged" />
-
-                    <Button Grid.Column="3"
+                    <Button Grid.Column="2"
                             x:Name="WhitelistButton"
                             Style="{StaticResource ModernButton}"
                             Content="⊞ 白名单"
@@ -82,7 +73,7 @@
                             VerticalAlignment="Center"
                             Click="OnOpenWhitelist" />
 
-                    <Button Grid.Column="4"
+                    <Button Grid.Column="3"
                             x:Name="SettingsButton"
                             Style="{StaticResource ModernButton}"
                             Content="⚙ 设置"
@@ -91,7 +82,7 @@
                             VerticalAlignment="Center"
                             Click="OnOpenSettings" />
 
-                    <Button Grid.Column="5"
+                    <Button Grid.Column="4"
                             x:Name="ReloadButton"
                             Style="{StaticResource ModernButton}"
                             Content="⟳"
@@ -102,7 +93,7 @@
                             ToolTip="重新加载词库"
                             Click="OnReloadWordlist" />
 
-                    <Button Grid.Column="6"
+                    <Button Grid.Column="5"
                             x:Name="AboutButton"
                             Style="{StaticResource ModernButton}"
                             Content="ⓘ"
@@ -113,19 +104,19 @@
                             ToolTip="关于"
                             Click="OnOpenAbout" />
 
-                    <Button Grid.Column="7"
-                            x:Name="OpenFileButton"
+                    <Button Grid.Column="6"
+                            x:Name="StatsButton"
                             Style="{StaticResource ModernButton}"
-                            Content="📂"
+                            Content="📊"
                             Padding="8,6"
                             Width="32"
                             FontSize="15"
                             Margin="4,0,0,0"
                             VerticalAlignment="Center"
-                            ToolTip="打开文本文件"
-                            Click="OnOpenFile" />
+                            ToolTip="统计面板"
+                            Click="OnOpenStatistics" />
 
-                    <Button Grid.Column="8"
+                    <Button Grid.Column="7"
                             x:Name="HistoryButton"
                             Style="{StaticResource ModernButton}"
                             Content="🕐"
@@ -143,6 +134,8 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                         <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
@@ -215,6 +208,7 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="Auto" />
                             </Grid.ColumnDefinitions>
                             <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{StaticResource AccentBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" x:Name="InputLabel" Text="广播文本"
@@ -224,15 +218,24 @@
                             <TextBlock x:Name="CharCountLabel" Grid.Column="2"
                                        Foreground="{StaticResource TextMutedBrush}"
                                        FontSize="11" FontFamily="{StaticResource MonoFont}"
-                                       VerticalAlignment="Center" />
+                                       VerticalAlignment="Center" Margin="0,0,4,0" />
                             <Button Grid.Column="3"
+                                    x:Name="FileOpenButton"
+                                    Style="{StaticResource ModernButton}"
+                                    Content="📄"
+                                    Width="24" Height="24"
+                                    Padding="0"
+                                    FontSize="11"
+                                    ToolTip="打开文件 / 导入单词"
+                                    Click="OnFileOpenOrImport" />
+                            <Button Grid.Column="4"
                                     x:Name="ClearButton"
                                     Style="{StaticResource DangerButton}"
                                     Content="✕"
                                     Width="24" Height="24"
                                     Padding="0"
                                     FontSize="12"
-                                    Margin="8,0,0,0"
+                                    Margin="4,0,0,0"
                                     ToolTip="清空输入"
                                     Click="OnClearInput" />
                         </Grid>
@@ -250,6 +253,7 @@
                              VerticalScrollBarVisibility="Auto"
                              Padding="16,12"
                              FontSize="14"
+                             FontFamily="{StaticResource MonoFont}"
                              TextChanged="OnInputTextChanged"
                              PreviewKeyDown="OnInputPreviewKeyDown"
                              PreviewKeyUp="OnInputPreviewKeyUp" />
@@ -285,7 +289,10 @@
                                 <ColumnDefinition Width="*" />
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="Auto" />
-                            </Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                             <Ellipse Grid.Column="0" Width="8" Height="8" Fill="{StaticResource AccentGradientBrush}" VerticalAlignment="Center" />
                             <TextBlock Grid.Column="1" x:Name="ResultLabel" Text="检查结果"
                                        Style="{StaticResource SectionLabel}"
@@ -317,6 +324,7 @@
                                  Background="Transparent"
                                  Padding="16,12"
                                  FontSize="14"
+                                 FontFamily="{StaticResource MonoFont}"
                                  IsReadOnly="True" />
                 </Grid>
             </Border>
@@ -404,9 +412,6 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="*" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="8" />
-                    <ColumnDefinition Width="120" />
                 </Grid.ColumnDefinitions>
 
                 <!-- Available -->
@@ -415,7 +420,10 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                         <Ellipse Width="6" Height="6" Fill="{StaticResource SuccessBrush}" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="1" x:Name="AvailableLabel"
                                    Text="可用：0"
@@ -431,7 +439,10 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                         <Ellipse Width="6" Height="6" Fill="{StaticResource ErrorBrush}" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="1" x:Name="UnavailableLabel"
                                    Text="不可用：0"
@@ -447,7 +458,10 @@
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="Auto" />
-                        </Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
                         <Ellipse Width="6" Height="6" Fill="{StaticResource IgnoredBrush}" VerticalAlignment="Center" />
                         <TextBlock Grid.Column="2" x:Name="IgnoredLabel"
                                    Text="已忽略：0"
@@ -457,25 +471,31 @@
                     </Grid>
                 </Border>
 
-                <!-- Coverage progress bar -->
-                <Grid Grid.Column="4" VerticalAlignment="Center">
-                    <Border CornerRadius="6" Background="#1A1A24" Width="120" Height="8">
+                <!-- Coverage progress bar + 百分比 -->
+                <Grid Grid.Column="3" VerticalAlignment="Center" Margin="12,0,0,0">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="Auto" />
+                    </Grid.ColumnDefinitions>
+                    <Border Grid.Column="0" CornerRadius="6" Background="#1A1A24" Height="8" Margin="0,0,8,0"
+                            ClipToBounds="True">
                         <Border x:Name="CoverageBar"
                                 CornerRadius="6"
                                 Background="{StaticResource AccentGradientBrush}"
                                 HorizontalAlignment="Left"
-                                Width="0" />
+                                Width="2000">
+                            <Border.RenderTransform>
+                                <ScaleTransform ScaleX="0" ScaleY="1" />
+                            </Border.RenderTransform>
+                        </Border>
                     </Border>
+                    <TextBlock Grid.Column="1" x:Name="CoverageLabel"
+                               Text="0%"
+                               Foreground="{StaticResource AccentLightBrush}"
+                               FontSize="13" FontWeight="SemiBold"
+                               FontFamily="{StaticResource MonoFont}"
+                               VerticalAlignment="Center" />
                 </Grid>
-
-                <!-- Coverage text -->
-                <TextBlock Grid.Column="6" x:Name="CoverageLabel"
-                           Text="0%"
-                           Foreground="{StaticResource AccentLightBrush}"
-                           FontSize="13" FontWeight="SemiBold"
-                           FontFamily="{StaticResource MonoFont}"
-                           VerticalAlignment="Center"
-                           TextAlignment="Right" />
             </Grid>
         </Border>
     </Grid>

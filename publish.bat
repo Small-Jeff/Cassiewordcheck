@@ -11,7 +11,9 @@ echo ========================================
 echo   CassieWordCheck - Publish Package
 echo   Output: %PUBLISH_DIR%
 echo   Runtime: %RID% (Self-contained)
+echo   Version: 2.3.0
 echo   Data folder: data\ (统一封装)
+echo   Features: 单实例 | 自动更新 | 统计面板 | 批量导入 | 多语言
 echo ========================================
 echo.
 

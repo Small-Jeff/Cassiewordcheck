@@ -18,7 +18,6 @@ public partial class MainWindow : Window
     private readonly HistoryStore _historyStore = new();
     private readonly DispatcherTimer _historyTimer = new();
     private string _suggestionLabelOriginal = "";
-    private bool _isLanguageInit = true;
     private bool _suppressAnimation;
     private DateTime _lastBounceTime = DateTime.MinValue;
     // 历史快照缓存（每隔 3 分钟由 Timer 写入磁盘）
@@ -51,9 +50,6 @@ public partial class MainWindow : Window
         InputBox.TextWrapping = _settings.WordWrap ? TextWrapping.Wrap : TextWrapping.NoWrap;
         ResultBox.FontSize = _settings.FontSize;
 
-        PopulateLanguages();
-        _isLanguageInit = false;
-
         _suggestionLabelOriginal = SuggestionLabel.Text;
         LoadWordListAsync();
         UpdateUILanguage();
@@ -64,53 +60,58 @@ public partial class MainWindow : Window
         _historyTimer.Start();
     }
 
-    // ── 入场动画 ─────────────────────────────────────────────────
+    // ── 入场动画（错峰播放，减少同时并发）─────────────────────────
     private void OnMainWindowLoaded(object sender, RoutedEventArgs e)
     {
-        // ── 加载工具栏图标 ──
         LoadToolbarIcon();
 
-        // ── 顶部工具栏：顶部滑入 ──
+        // Wave 1 (0ms): 工具栏从顶部滑入 —— 只有 2 个动画
         ToolbarCard.Opacity = 0;
         var toolbarT = new TranslateTransform(0, -15);
         ToolbarCard.RenderTransform = toolbarT;
         ToolbarCard.RenderTransformOrigin = new Point(0.5, 0.5);
-        Animate(ToolbarCard, UIElement.OpacityProperty, 0, 1, 350, new QuadraticEase());
-        Animate(toolbarT, TranslateTransform.YProperty, -15, 0, 400, new QuadraticEase());
+        Animate(ToolbarCard, UIElement.OpacityProperty, 0, 1, 300, new QuadraticEase());
+        Animate(toolbarT, TranslateTransform.YProperty, -15, 0, 350, new QuadraticEase());
 
-        // ── 主内容区（输入/结果卡片）──
+        // Wave 2 (80ms): 主内容区上移淡入 —— 2 个动画
         var cards = MainContentGrid;
         cards.Opacity = 0;
         var ct = (TranslateTransform)cards.RenderTransform;
         ct.Y = 25;
-        Animate(cards, UIElement.OpacityProperty, 0, 1, 400, new QuadraticEase());
-        Animate(ct, TranslateTransform.YProperty, 25, 0, 500, new QuadraticEase());
+        Animate(cards, UIElement.OpacityProperty, 0, 1, 320, new QuadraticEase(), 80);
+        Animate(ct, TranslateTransform.YProperty, 25, 0, 400, new QuadraticEase(), 80);
 
-        // ── 两卡片从中心 0.15x 同步弹开 ──
+        // Wave 3 (160ms): 两卡片从中心弹开 —— 6 个动画
         var inputScale = (ScaleTransform)InputCard.RenderTransform;
         var resultGroup = (TransformGroup)ResultCard.RenderTransform;
         var resultScale = (ScaleTransform)resultGroup.Children[1];
 
-        inputScale.ScaleX = 0.15;
-        inputScale.ScaleY = 0.15;
+        inputScale.ScaleX = 0.35;
+        inputScale.ScaleY = 0.35;
         InputCard.Opacity = 0;
-        resultScale.ScaleX = 0.15;
-        resultScale.ScaleY = 0.15;
+        resultScale.ScaleX = 0.35;
+        resultScale.ScaleY = 0.35;
         ResultCard.Opacity = 0;
 
-        var cardEase = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.25 };
-        const int cardD = 480;
+        var cardEase = new BackEase { EasingMode = EasingMode.EaseOut, Amplitude = 0.2 };
+        const int cardD = 420;
 
-        Animate(inputScale, ScaleTransform.ScaleXProperty, 0.15, 1, cardD, cardEase);
-        Animate(inputScale, ScaleTransform.ScaleYProperty, 0.15, 1, cardD, cardEase);
-        Animate(InputCard, UIElement.OpacityProperty, 0, 1, cardD - 100, new QuadraticEase());
-        Animate(resultScale, ScaleTransform.ScaleXProperty, 0.15, 1, cardD, cardEase);
-        Animate(resultScale, ScaleTransform.ScaleYProperty, 0.15, 1, cardD, cardEase);
-        Animate(ResultCard, UIElement.OpacityProperty, 0, 1, cardD - 100, new QuadraticEase());
+        Animate(inputScale, ScaleTransform.ScaleXProperty, 0.35, 1, cardD, cardEase, 160);
+        Animate(inputScale, ScaleTransform.ScaleYProperty, 0.35, 1, cardD, cardEase, 160);
+        Animate(InputCard, UIElement.OpacityProperty, 0, 1, cardD - 100, new QuadraticEase(), 160);
+        Animate(resultScale, ScaleTransform.ScaleXProperty, 0.35, 1, cardD, cardEase, 160);
+        Animate(resultScale, ScaleTransform.ScaleYProperty, 0.35, 1, cardD, cardEase, 160);
+        Animate(ResultCard, UIElement.OpacityProperty, 0, 1, cardD - 100, new QuadraticEase(), 160);
 
-        // ── 统计栏 ──
+        // Wave 4 (360ms): 底部统计栏 + 文件按钮淡入 —— 2 个动画
         StatsBar.Opacity = 0;
-        Animate(StatsBar, UIElement.OpacityProperty, 0, 1, 550, new QuadraticEase());
+        Animate(StatsBar, UIElement.OpacityProperty, 0, 1, 400, new QuadraticEase(), 360);
+
+        FileOpenButton.Opacity = 0;
+        var fileAnim = new DoubleAnimation(0, 1, new Duration(TimeSpan.FromMilliseconds(280)));
+        fileAnim.EasingFunction = new QuadraticEase();
+        fileAnim.BeginTime = TimeSpan.FromMilliseconds(360);
+        FileOpenButton.BeginAnimation(UIElement.OpacityProperty, fileAnim);
     }
 
     // ── 从 data/ 加载工具栏图标 ─────────────────────────────────
@@ -190,9 +191,9 @@ public partial class MainWindow : Window
         _snapshotCoverage = coverage;
 
         // 进度条过渡
-        var targetWidth = Math.Max(2, Math.Min(120, coverage * 1.2));
-        Animate(CoverageBar, FrameworkElement.WidthProperty,
-            CoverageBar.ActualWidth, targetWidth, 400, new QuadraticEase());
+        var scale = coverage / 100.0;
+        Animate(CoverageBar.RenderTransform, ScaleTransform.ScaleXProperty,
+            ((ScaleTransform)CoverageBar.RenderTransform).ScaleX, scale, 400, new QuadraticEase());
 
         // 输入实时同步 → 结果卡片"键入"微动（防抖：300ms 内不重复触发）
         var now = DateTime.UtcNow;
@@ -333,18 +334,20 @@ public partial class MainWindow : Window
     // ── 工具方法 ─────────────────────────────────────────────────
     // UIElement 和 Animatable 是两条继承链，各自有 BeginAnimation，所以需要两个重载
     private static void Animate(UIElement target, DependencyProperty prop,
-        double from, double to, int ms, IEasingFunction? easing = null)
+        double from, double to, int ms, IEasingFunction? easing = null, int delayMs = 0)
     {
         var anim = new DoubleAnimation(from, to, new Duration(TimeSpan.FromMilliseconds(ms)));
         if (easing != null) anim.EasingFunction = easing;
+        if (delayMs > 0) anim.BeginTime = TimeSpan.FromMilliseconds(delayMs);
         target.BeginAnimation(prop, anim);
     }
 
     private static void Animate(Animatable target, DependencyProperty prop,
-        double from, double to, int ms, IEasingFunction? easing = null)
+        double from, double to, int ms, IEasingFunction? easing = null, int delayMs = 0)
     {
         var anim = new DoubleAnimation(from, to, new Duration(TimeSpan.FromMilliseconds(ms)));
         if (easing != null) anim.EasingFunction = easing;
+        if (delayMs > 0) anim.BeginTime = TimeSpan.FromMilliseconds(delayMs);
         target.BeginAnimation(prop, anim);
     }
 
@@ -361,20 +364,65 @@ public partial class MainWindow : Window
         return result;
     }
 
-    // ── 语言 ─────────────────────────────────────────────────────
-    private void PopulateLanguages()
+    // ── 文件操作：打开文本 / 导入单词 ────────────────────────────
+    private async void OnFileOpenOrImport(object sender, RoutedEventArgs e)
     {
-        LanguageSelector.Items.Clear();
-        var langs = _localization.AvailableLanguages()
-            .OrderBy(l => l.Key).ToList();
-        foreach (var (display, code) in langs)
+        var dialog = new Microsoft.Win32.OpenFileDialog
         {
-            LanguageSelector.Items.Add(new LanguageItem(display, code));
-            if (code == _localization.CurrentLanguage)
-                LanguageSelector.SelectedIndex = LanguageSelector.Items.Count - 1;
+            Title = "打开文件 / 导入单词",
+            Filter = "所有支持的文件 (*.txt;*.csv;*.xlsx)|*.txt;*.csv;*.xlsx|" +
+                     "文本文件 (*.txt)|*.txt|CSV 文件 (*.csv)|*.csv|Excel 文件 (*.xlsx)|*.xlsx",
+            Multiselect = true,
+            CheckFileExists = true,
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        var textFiles = dialog.FileNames.Where(f =>
+            f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)).ToList();
+        var importFiles = dialog.FileNames.Where(f =>
+            !f.EndsWith(".txt", StringComparison.OrdinalIgnoreCase)).ToList();
+
+        // 导入非 .txt 文件（CSV/Excel → 单词）
+        if (importFiles.Count > 0)
+        {
+            var totalAdded = 0;
+            foreach (var file in importFiles)
+            {
+                try
+                {
+                    var added = await Task.Run(() => _wordlist.AddFromFile(file));
+                    if (added > 0) totalAdded += added;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show($"导入失败：{Path.GetFileName(file)}\n{ex.Message}",
+                        "错误", MessageBoxButton.OK, MessageBoxImage.Warning);
+                }
+            }
+            if (totalAdded > 0)
+            {
+                _suggestionCache.Clear();
+                WordListInfo.Text = string.Format(_localization["status.words"], _wordlist.WordCount);
+                UpdateResult();
+            }
         }
-        if (LanguageSelector.Items.Count > 0 && LanguageSelector.SelectedIndex < 0)
-            LanguageSelector.SelectedIndex = 0;
+
+        // .txt 文件 → 加载到输入框
+        if (textFiles.Count > 0)
+        {
+            PushUndo();
+            if (textFiles.Count == 1)
+            {
+                InputBox.Text = File.ReadAllText(textFiles[0]);
+            }
+            else
+            {
+                var parts = textFiles.Select(f =>
+                    $"===== {Path.GetFileName(f)} =====\n{File.ReadAllText(f)}");
+                InputBox.Text = string.Join("\n\n", parts);
+            }
+        }
     }
 
     private async void LoadWordListAsync()
@@ -421,23 +469,17 @@ public partial class MainWindow : Window
         });
     }
 
-    private void OnLanguageChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (_isLanguageInit) return;
-        if (LanguageSelector.SelectedItem is LanguageItem item)
-        {
-            _localization.SetLanguage(item.Code);
-            _settings.Language = item.Code;
-            _settings.Save();
-            UpdateUILanguage();
-        }
-    }
-
     private void UpdateUILanguage()
     {
+        var settingsLabel = _localization["settings.title"];
+        if (_localization.CurrentLanguage != "en-US")
+            settingsLabel += " (settings)";
         WhitelistButton.Content = $"⊞ {_localization["whitelist.title"]}";
-        SettingsButton.Content = $"⚙ {_localization["settings.title"]}";
+        SettingsButton.Content = $"⚙ {settingsLabel}";
         ReloadButton.ToolTip = _localization["menu.reload_wordlist"];
+        StatsButton.ToolTip = _localization["menu.statistics"];
+        AboutButton.ToolTip = _localization["menu.about"];
+        FileOpenButton.ToolTip = "打开文件 / 导入单词";
         InputLabel.Text = _localization["input.label"];
         ResultLabel.Text = _localization["result.label"];
         CopyButton.Content = $"📋 {_localization["menu.copy_result"]}";
@@ -457,6 +499,7 @@ public partial class MainWindow : Window
         UpdateResult();
     }
 
+    // ── 打开设置 ──────────────────────────────────────────────────
     private void OnOpenSettings(object sender, RoutedEventArgs e)
     {
         var dialog = new SettingsWindow(_settings, _checker, _wordlist, _localization);
@@ -466,6 +509,7 @@ public partial class MainWindow : Window
             InputBox.FontSize = _settings.FontSize;
             InputBox.TextWrapping = _settings.WordWrap ? TextWrapping.Wrap : TextWrapping.NoWrap;
             ResultBox.FontSize = _settings.FontSize;
+            UpdateUILanguage();
             UpdateResult();
         }
     }
@@ -507,6 +551,18 @@ public partial class MainWindow : Window
             WordListInfo.Text = $"⚠ {_localization["status.load_failed"]}: {ex.Message}";
         }
     }
+
+    // ── 统计面板 ──────────────────────────────────────────────────
+    private void OnOpenStatistics(object sender, RoutedEventArgs e)
+    {
+        var dialog = new StatisticsWindow(_historyStore, _localization)
+        {
+            Owner = this,
+        };
+        dialog.ShowDialog();
+    }
+
+
 
     private void OnOpenWordlistLocation(object sender, System.Windows.Navigation.RequestNavigateEventArgs e)
     {
@@ -562,36 +618,6 @@ public partial class MainWindow : Window
         }
     }
 
-    // ── 打开文件 ──────────────────────────────────────────────────
-    private void OnOpenFile(object sender, RoutedEventArgs e)
-    {
-        var dialog = new Microsoft.Win32.OpenFileDialog
-        {
-            Title = "选择文本文件",
-            Filter = "文本文件 (*.txt)|*.txt|所有文件 (*.*)|*.*",
-            Multiselect = true,
-            CheckFileExists = true,
-        };
-
-        if (dialog.ShowDialog() == true && dialog.FileNames.Length > 0)
-        {
-            PushUndo();
-
-            if (dialog.FileNames.Length == 1)
-            {
-                // 单个文件 → 直接加载到输入框
-                InputBox.Text = File.ReadAllText(dialog.FileName);
-            }
-            else
-            {
-                // 多个文件 → 合并显示，文件名做分隔
-                var parts = dialog.FileNames.Select(f =>
-                    $"===== {Path.GetFileName(f)} =====\n{File.ReadAllText(f)}");
-                InputBox.Text = string.Join("\n\n", parts);
-            }
-        }
-    }
-
     // ── 检查历史 ──────────────────────────────────────────────────
     private void OnToggleHistory(object sender, RoutedEventArgs e)
     {
@@ -617,8 +643,4 @@ public partial class MainWindow : Window
             _snapshotAvailable, _snapshotUnavailable, _snapshotIgnored, _snapshotCoverage);
     }
 
-    private record LanguageItem(string Display, string Code)
-    {
-        public override string ToString() => Display;
-    }
 }
