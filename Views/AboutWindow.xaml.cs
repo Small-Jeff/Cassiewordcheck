@@ -33,7 +33,16 @@ public partial class AboutWindow : Window
 ";
 
     private const string ChangelogText = @"
-v2.1.0（代码优化）
+v2.1.1（性能与代码质量）
+• CheckText 不再被 GetStatistics 重复调用，每次输入检查少跑一遍全量分词
+• 建议面板结果缓存（Levenshtein 编辑距离结果按词缓存，词库重载时自动清除）
+• 键入缩放动画加 300ms 防抖，连续打字不再频繁触发
+• 阵营/希腊字母匹配改为 HashSet O(1) 查找
+• IsIgnoredToken 合并冗余的 ToLowerInvariant 调用
+• LocalizationService 抽取公共 ResolveLocalePath 方法，消除路径查找逻辑重复
+• AboutWindow 头像路径改为多路径 fallback 查找
+• 移除 GlobalUsings.cs 中未使用的 System.Collections.ObjectModel
+• 清理 git 中误提交的 bin/obj/dist/.idea 等构建产物
 • 新增 .sln 解决方案文件，修复 Rider/VS 无法识别项目的问题
 • 修复 HexRegex 误伤纯数字的问题（要求十六进制至少含一个字母）
 • Clipbaord.SetText 增加 try-catch，避免剪贴板被占用时崩溃
@@ -132,9 +141,15 @@ v1.0.0（初始版本）
     {
         try
         {
-            var exeDir = Path.GetDirectoryName(Environment.ProcessPath);
-            var imgPath = Path.Combine(exeDir ?? ".", "qr.JPG");
-            if (File.Exists(imgPath))
+            // 尝试多个路径寻找头像
+            var imgPath = new[]
+            {
+                Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "qr.JPG"),
+                Path.Combine(Path.GetDirectoryName(Environment.ProcessPath) ?? ".", "qr.JPG"),
+                Path.Combine(Directory.GetCurrentDirectory(), "qr.JPG"),
+            }.FirstOrDefault(File.Exists);
+
+            if (imgPath is not null)
             {
                 var bitmap = new BitmapImage();
                 bitmap.BeginInit();

@@ -28,26 +28,9 @@ public class LocalizationService
 
     public IReadOnlyDictionary<string, string> AvailableLanguages()
     {
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var localePath = Path.Combine(baseDir, LocaleDir);
-
-        // Try from base directory first, then source
-        if (!Directory.Exists(localePath))
-        {
-            localePath = Path.Combine(Directory.GetCurrentDirectory(), LocaleDir);
-            if (!Directory.Exists(localePath))
-            {
-                // Try project root
-                var projectRoot = Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", ".."));
-                localePath = Path.Combine(projectRoot, LocaleDir);
-            }
-        }
-
-        if (!Directory.Exists(localePath))
-        {
-            // Return default
+        var localePath = ResolveLocalePath();
+        if (localePath is null)
             return new Dictionary<string, string> { ["简体中文"] = "zh-CN" };
-        }
 
         var result = new Dictionary<string, string>();
         foreach (var file in Directory.GetFiles(localePath, "*.json"))
@@ -72,31 +55,36 @@ public class LocalizationService
 
     public string this[string key] => Translate(key) ?? key;
 
+    /// <summary>尝试多个路径查找 locale 目录，返回第一个存在的</summary>
+    private static string? ResolveLocalePath()
+    {
+        var candidates = new[]
+        {
+            Path.Combine(AppDomain.CurrentDomain.BaseDirectory, LocaleDir),
+            Path.Combine(Directory.GetCurrentDirectory(), LocaleDir),
+            Path.Combine(Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..")), LocaleDir),
+        };
+        return candidates.FirstOrDefault(Directory.Exists);
+    }
+
     private void EnsureLoaded(string langCode)
     {
         if (_cache.ContainsKey(langCode)) return;
 
         var data = new Dictionary<string, string>();
-        var baseDir = AppDomain.CurrentDomain.BaseDirectory;
-        var possiblePaths = new[]
+        var localeDir = ResolveLocalePath();
+        if (localeDir is not null)
         {
-            Path.Combine(baseDir, LocaleDir, $"{langCode}.json"),
-            Path.Combine(Directory.GetCurrentDirectory(), LocaleDir, $"{langCode}.json"),
-            Path.Combine(Path.GetFullPath(Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "..")), LocaleDir, $"{langCode}.json"),
-        };
-
-        foreach (var path in possiblePaths)
-        {
-            if (File.Exists(path))
+            var path = Path.Combine(localeDir, $"{langCode}.json");
+            try
             {
-                try
+                if (File.Exists(path))
                 {
                     var json = File.ReadAllText(path);
                     data = JsonSerializer.Deserialize<Dictionary<string, string>>(json, JsonOptions) ?? data;
-                    break;
                 }
-                catch { }
             }
+            catch { }
         }
 
         _cache[langCode] = data;

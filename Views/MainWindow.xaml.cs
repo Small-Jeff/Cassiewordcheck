@@ -10,8 +10,10 @@ public partial class MainWindow : Window
     private readonly Checker _checker;
     private readonly Settings _settings;
     private readonly LocalizationService _localization;
+    private readonly Dictionary<string, string> _suggestionCache = new(StringComparer.OrdinalIgnoreCase);
     private bool _isLanguageInit = true;
     private bool _suppressAnimation;
+    private DateTime _lastBounceTime = DateTime.MinValue;
 
     public MainWindow()
     {
@@ -103,7 +105,7 @@ public partial class MainWindow : Window
         CharCountLabel.Text = string.Format(_localization["stats.chars"], text.Length);
 
         var results = _checker.CheckText(text);
-        var stats = _checker.GetStatistics(text);
+        var stats = _checker.GetStatistics(results, text);
 
         ResultBox.Document = DocumentBuilder.BuildResultDocument(results, ResultBox.ActualWidth, _settings.FontSize);
 
@@ -122,15 +124,21 @@ public partial class MainWindow : Window
         Animate(CoverageBar, FrameworkElement.WidthProperty,
             CoverageBar.ActualWidth, targetWidth, 400, new QuadraticEase());
 
-        // 输入实时同步 → 结果卡片"键入"微动
-        var resultGroup = (TransformGroup)ResultCard.RenderTransform;
-        var resultScale = (ScaleTransform)resultGroup.Children[1];
-        ResultCard.RenderTransformOrigin = new Point(0.5, 0.5);
+        // 输入实时同步 → 结果卡片"键入"微动（防抖：300ms 内不重复触发）
+        var now = DateTime.UtcNow;
+        if ((now - _lastBounceTime).TotalMilliseconds > 300)
+        {
+            _lastBounceTime = now;
 
-        var typingBounce = new DoubleAnimation(1, 1.015, new Duration(TimeSpan.FromMilliseconds(80)))
-        { AutoReverse = true, EasingFunction = new QuadraticEase() };
-        resultScale.BeginAnimation(ScaleTransform.ScaleXProperty, typingBounce);
-        resultScale.BeginAnimation(ScaleTransform.ScaleYProperty, (DoubleAnimation)typingBounce.Clone());
+            var resultGroup = (TransformGroup)ResultCard.RenderTransform;
+            var resultScale = (ScaleTransform)resultGroup.Children[1];
+            ResultCard.RenderTransformOrigin = new Point(0.5, 0.5);
+
+            var typingBounce = new DoubleAnimation(1, 1.015, new Duration(TimeSpan.FromMilliseconds(80)))
+            { AutoReverse = true, EasingFunction = new QuadraticEase() };
+            resultScale.BeginAnimation(ScaleTransform.ScaleXProperty, typingBounce);
+            resultScale.BeginAnimation(ScaleTransform.ScaleYProperty, (DoubleAnimation)typingBounce.Clone());
+        }
 
         // 建议面板 + 卡片整体上移动画（清空/退格时跳过）
         if (_suppressAnimation) return;
@@ -243,10 +251,15 @@ public partial class MainWindow : Window
 
     private string FormatSuggestions(string word)
     {
+        if (_suggestionCache.TryGetValue(word, out var cached))
+            return cached;
+
         var closest = LevenshteinHelper.FindClosest(word, _wordlist.Words, 3);
-        return closest.Count > 0
+        var result = closest.Count > 0
             ? $"→ {string.Join(", ", closest.Select(c => c.word))}"
             : $"— {_localization["suggestion.no_match"]}";
+        _suggestionCache[word] = result;
+        return result;
     }
 
     // ── 语言 ─────────────────────────────────────────────────────
@@ -382,6 +395,7 @@ public partial class MainWindow : Window
         try
         {
             var count = _wordlist.Reload();
+            _suggestionCache.Clear();
             WordListInfo.Text = string.Format(_localization["status.words"], count);
             var path = _wordlist.SourcePath ?? "";
             WordlistPathLink.Inlines.Clear();

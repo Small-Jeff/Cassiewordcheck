@@ -6,13 +6,17 @@ public partial class Checker
 {
     private readonly WordList _wordlist;
 
-    private static readonly string[] _factionNames =
-        ["MTF", "UIU", "GOC", "CI", "NTF", "GRU", "FBI"];
+    private static readonly HashSet<string> FactionNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "MTF", "UIU", "GOC", "CI", "NTF", "GRU", "FBI"
+    };
 
-    private static readonly string[] _greekLetters =
-        ["Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta",
-         "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi",
-         "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"];
+    private static readonly HashSet<string> GreekLetters = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Alpha", "Beta", "Gamma", "Delta", "Epsilon", "Zeta", "Eta", "Theta",
+        "Iota", "Kappa", "Lambda", "Mu", "Nu", "Xi", "Omicron", "Pi",
+        "Rho", "Sigma", "Tau", "Upsilon", "Phi", "Chi", "Psi", "Omega"
+    };
 
     public bool IgnoreChinese { get; set; } = true;
     public bool FilterFormatting { get; set; } = true;
@@ -70,6 +74,8 @@ public partial class Checker
         if (value.Length == 1 && "。，.,?？".Contains(value))
             return true;
 
+        var lower = value.ToLowerInvariant();
+
         // 格式标签 <...>
         if (value.StartsWith("<") && value.EndsWith(">"))
         {
@@ -80,16 +86,14 @@ public partial class Checker
         }
 
         // 裸词
-        if (value.Equals("link", StringComparison.OrdinalIgnoreCase)
-            || value.Equals("split", StringComparison.OrdinalIgnoreCase)
-            || value.Equals("color", StringComparison.OrdinalIgnoreCase))
+        if (lower is "link" or "split" or "color")
             return true;
 
         // pitch_x / pitch_.x / pitch_x.y
         if (PitchRegex().IsMatch(value))
             return true;
 
-        // #990033 / #fff 等十六进制色值
+        // 十六进制色值
         if (HexRegex().IsMatch(value))
             return true;
 
@@ -106,21 +110,20 @@ public partial class Checker
 
     private static bool IsNamingToken(string value)
     {
-        var lower = value.ToLowerInvariant();
-
-        // 阵营缩写（精确匹配）
-        if (_factionNames.Any(f => lower == f.ToLowerInvariant()))
+        // 阵营缩写（HashSet O(1) 查找）
+        if (FactionNames.Contains(value))
             return true;
 
-        // 希腊字母（精确匹配）
-        if (_greekLetters.Any(g => lower == g.ToLowerInvariant()))
+        // 希腊字母
+        if (GreekLetters.Contains(value))
             return true;
 
-        // 北约代号-x  如 Alpha-1 Bravo-2
+        // 北约代号-x/y/z 如 Alpha-1 Echo-3
         if (NatoRegex().IsMatch(value))
             return true;
 
         // MtfUnit/MTFUnit 等变体
+        var lower = value.ToLowerInvariant();
         if (lower.StartsWith("mtf") && lower.Contains("unit"))
             return true;
 
@@ -154,8 +157,10 @@ public partial class Checker
     }
 
     public Dictionary<string, object> GetStatistics(string text)
+        => GetStatistics(CheckText(text), text);
+
+    public Dictionary<string, object> GetStatistics(List<CheckResult> results, string? originalText = null)
     {
-        var results = CheckText(text);
         int total = results.Count(r => r.Status is CheckStatus.Available or CheckStatus.Unavailable);
         int available = results.Count(r => r.Status == CheckStatus.Available);
         int unavailable = results.Count(r => r.Status == CheckStatus.Unavailable);
@@ -169,7 +174,7 @@ public partial class Checker
             ["unavailable"] = unavailable,
             ["ignored"] = ignored,
             ["coverage"] = coverage,
-            ["char_count"] = text.Length,
+            ["char_count"] = originalText?.Length ?? 0,
         };
     }
 
@@ -179,25 +184,18 @@ public partial class Checker
     [GeneratedRegex(@"[a-zA-Z0-9_.-]+")]
     private static partial Regex WordRegex();
 
-    // pitch_5 / pitch_0.5 / pitch_.2
     [GeneratedRegex(@"^pitch_\.?\d+(\.\d+)?$", RegexOptions.IgnoreCase)]
     private static partial Regex PitchRegex();
 
-    // 十六进制色值（不含 #），要求至少含一个字母避免误伤纯数字
-    // 如 990033 / fff / aabbcc
     [GeneratedRegex(@"^(?=.*[a-f])[0-9a-f]{3,8}$", RegexOptions.IgnoreCase)]
     private static partial Regex HexRegex();
 
-    // .G4 .g3 .G5 等音高八度记号
     [GeneratedRegex(@"^\.G\d$", RegexOptions.IgnoreCase)]
     private static partial Regex NoteRegex();
 
-    // JAM_040_2 等音效
     [GeneratedRegex(@"^JAM_\d+(_\d+)*$", RegexOptions.IgnoreCase)]
     private static partial Regex JamRegex();
 
-    // 北约代号-x/y/z 如 Alpha-1 Echo-3
     [GeneratedRegex(@"^(Alpha|Bravo|Charlie|Delta|Echo|Foxtrot|Golf|Hotel|India|Juliett|Kilo|Lima|Mike|November|Oscar|Papa|Quebec|Romeo|Sierra|Tango|Uniform|Victor|Whiskey|Xray|Yankee|Zulu)[-\s]\d+$", RegexOptions.IgnoreCase)]
     private static partial Regex NatoRegex();
-
 }
