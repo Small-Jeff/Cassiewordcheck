@@ -43,6 +43,8 @@ v2.1.1（性能与代码质量）
 • AboutWindow 头像路径改为多路径 fallback 查找
 • 移除 GlobalUsings.cs 中未使用的 System.Collections.ObjectModel
 • 清理 git 中误提交的 bin/obj/dist/.idea 等构建产物
+
+v2.1.0（代码优化）
 • 新增 .sln 解决方案文件，修复 Rider/VS 无法识别项目的问题
 • 修复 HexRegex 误伤纯数字的问题（要求十六进制至少含一个字母）
 • Clipbaord.SetText 增加 try-catch，避免剪贴板被占用时崩溃
