@@ -183,8 +183,9 @@ public partial class Checker
     [GeneratedRegex(@"^pitch_\.?\d+(\.\d+)?$", RegexOptions.IgnoreCase)]
     private static partial Regex PitchRegex();
 
-    // 十六进制色值 #990033 / #fff / #aabbcc
-    [GeneratedRegex(@"^[0-9a-f]{3,8}$", RegexOptions.IgnoreCase)]
+    // 十六进制色值（不含 #），要求至少含一个字母避免误伤纯数字
+    // 如 990033 / fff / aabbcc
+    [GeneratedRegex(@"^(?=.*[a-f])[0-9a-f]{3,8}$", RegexOptions.IgnoreCase)]
     private static partial Regex HexRegex();
 
     // .G4 .g3 .G5 等音高八度记号

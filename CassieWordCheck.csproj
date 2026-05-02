@@ -8,18 +8,26 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>AAA.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>1.0.0.0</Version>
-    <FileVersion>1.0.0.0</FileVersion>
+    <Version>2.1.0.0</Version>
+    <FileVersion>2.1.0.0</FileVersion>
+    <AssemblyName>CassieWordCheck</AssemblyName>
+    <RootNamespace>CassieWordCheck</RootNamespace>
+    <Deterministic>true</Deterministic>
+  </PropertyGroup>
 
-    <!-- Publish settings -->
+  <!-- Debug 配置 -->
+  <PropertyGroup Condition="'$(Configuration)'=='Debug'">
+    <DebugType>portable</DebugType>
+  </PropertyGroup>
+
+  <!-- Release 配置：优化 + 单文件发布 -->
+  <PropertyGroup Condition="'$(Configuration)'=='Release'">
+    <DebugSymbols>false</DebugSymbols>
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
     <PublishSingleFile>true</PublishSingleFile>
     <SelfContained>true</SelfContained>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(Configuration)'=='Release'">
-    <DebugSymbols>false</DebugSymbols>
-    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>

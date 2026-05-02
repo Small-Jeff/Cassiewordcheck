@@ -33,6 +33,15 @@ public partial class AboutWindow : Window
 ";
 
     private const string ChangelogText = @"
+v2.1.0（代码优化）
+• 新增 .sln 解决方案文件，修复 Rider/VS 无法识别项目的问题
+• 修复 HexRegex 误伤纯数字的问题（要求十六进制至少含一个字母）
+• Clipbaord.SetText 增加 try-catch，避免剪贴板被占用时崩溃
+• 主题映射改用 switch 模式匹配，不再依赖本地化字符串作字典 key
+• 移除冗余的 ViewModel 文件（MainViewModel / SettingsViewModel / WhitelistViewModel——全部是死代码）
+• .csproj 重构：将单文件发布参数移至 Release 专属，避免 Debug 构建多余打包
+• 版本号升级至 2.1.0
+
 v2.0.0（第二次迭代）
 • 重构 Checker 引擎：去除粗暴的 <> 整体删除，改为逐个 token 精准过滤
 • 新增十六进制色值过滤（#990033 等自动忽略）

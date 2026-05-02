@@ -410,7 +410,14 @@ public partial class MainWindow : Window
         var text = new TextRange(ResultBox.Document.ContentStart, ResultBox.Document.ContentEnd).Text;
         if (!string.IsNullOrWhiteSpace(text))
         {
-            Clipboard.SetText(text.TrimEnd('\r', '\n'));
+            try
+            {
+                Clipboard.SetText(text.TrimEnd('\r', '\n'));
+            }
+            catch
+            {
+                // 剪贴板被占用时静默失败
+            }
 
             // 复制反馈动画
             CopyButton.Opacity = 0.5;
