@@ -39,5 +39,6 @@
   "label.default": "기본값",
   "suggestion.title": "제안",
   "suggestion.replace": "바꾸기",
-  "suggestion.no_suggestions": "제안 없음"
+  "suggestion.no_suggestions": "제안 없음",
+  "suggestion.no_match": "사전에 유사 단어 없음"
 }

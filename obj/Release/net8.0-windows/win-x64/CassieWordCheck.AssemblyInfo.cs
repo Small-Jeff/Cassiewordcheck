@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("CassieWordCheck")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0.0+6d51bc8d09741163727ea45f2edd1d7cc2937ddc")]
 [assembly: System.Reflection.AssemblyProductAttribute("CassieWordCheck")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CassieWordCheck")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

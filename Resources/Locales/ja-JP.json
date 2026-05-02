@@ -39,6 +39,7 @@
   "suggestion.title": "提案",
   "suggestion.replace": "置換",
   "suggestion.no_suggestions": "提案なし",
+  "suggestion.no_match": "辞書に類似語なし",
   "menu.copy_result": "結果をコピー",
   "menu.copy_broadcast": "放送文をコピー",
   "menu.reload_wordlist": "単語リストを再読み込み"

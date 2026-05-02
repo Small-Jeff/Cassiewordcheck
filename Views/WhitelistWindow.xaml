@@ -3,7 +3,8 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         Title="白名单管理"
         Width="460" Height="520"
-        ResizeMode="NoResize"
+        MinWidth="360" MinHeight="380"
+        ResizeMode="CanResizeWithGrip"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BgBrush}"
         Foreground="{StaticResource TextPrimaryBrush}">
@@ -71,8 +72,8 @@
                                                 Content="✕"
                                                 Padding="8,2"
                                                 FontSize="11"
-                                                Command="{Binding RemoveCommand}"
-                                                CommandParameter="{Binding Text}" />
+                                                Click="OnRemoveWord"
+                                                Tag="{Binding Text}" />
                                     </Grid>
                                 </Border>
                             </DataTemplate>

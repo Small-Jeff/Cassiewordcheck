@@ -22,19 +22,24 @@ public partial class SettingsWindow : Window
         this.EnableDarkTitleBar();
 
         IgnoreChineseCheck.IsChecked = _checker.IgnoreChinese;
-        IgnoreAngleCheck.IsChecked = _checker.IgnoreAngleBrackets;
+        FilterFormattingCheck.IsChecked = _checker.FilterFormatting;
+        FilterNamingCheck.IsChecked = _checker.FilterNaming;
         WordlistPathBox.Text = string.IsNullOrEmpty(_settings.WordlistPath)
             ? "默认词库（内嵌）"
             : _settings.WordlistPath;
 
-        var themeIndex = _settings.Theme switch
+        // 设置字体大小 ComboBox 选中项
+        var fontSizeStr = _settings.FontSize.ToString();
+        foreach (ComboBoxItem item in FontSizeCombo.Items)
         {
-            "Dark" => 0,
-            "Light" => 1,
-            "System" => 2,
-            _ => 0,
-        };
-        ThemeSelector.SelectedIndex = themeIndex;
+            if (item.Content.ToString() == fontSizeStr)
+            {
+                FontSizeCombo.SelectedItem = item;
+                break;
+            }
+        }
+
+        WordWrapCheck.IsChecked = _settings.WordWrap;
     }
 
     private void OnBrowseWordlist(object sender, RoutedEventArgs e)
@@ -52,37 +57,36 @@ public partial class SettingsWindow : Window
         }
     }
 
-    private void OnThemeChanged(object sender, SelectionChangedEventArgs e)
-    {
-        if (ThemeSelector.SelectedItem is ComboBoxItem item)
-        {
-            var theme = item.Content.ToString() switch
-            {
-                "深色" => "Dark",
-                "浅色" => "Light",
-                "系统" => "System",
-                _ => "Dark",
-            };
-            _settings.Theme = theme;
-            _settings.Save();
-        }
-    }
-
     private void OnResetDefaults(object sender, RoutedEventArgs e)
     {
         IgnoreChineseCheck.IsChecked = true;
-        IgnoreAngleCheck.IsChecked = true;
+        FilterFormattingCheck.IsChecked = true;
+        FilterNamingCheck.IsChecked = true;
         WordlistPathBox.Text = "默认词库（内嵌）";
-        ThemeSelector.SelectedIndex = 0;
+        // 默认字体 14
+        foreach (ComboBoxItem item in FontSizeCombo.Items)
+        {
+            if (item.Content.ToString() == "14")
+            {
+                FontSizeCombo.SelectedItem = item;
+                break;
+            }
+        }
+        WordWrapCheck.IsChecked = true;
     }
 
     private void OnSave(object sender, RoutedEventArgs e)
     {
         _checker.IgnoreChinese = IgnoreChineseCheck.IsChecked ?? true;
-        _checker.IgnoreAngleBrackets = IgnoreAngleCheck.IsChecked ?? true;
+        _checker.FilterFormatting = FilterFormattingCheck.IsChecked ?? true;
+        _checker.FilterNaming = FilterNamingCheck.IsChecked ?? true;
 
         _settings.IgnoreChinese = _checker.IgnoreChinese;
-        _settings.IgnoreAngleBrackets = _checker.IgnoreAngleBrackets;
+        _settings.FilterFormatting = _checker.FilterFormatting;
+        _settings.FilterNaming = _checker.FilterNaming;
+        _settings.FontSize = FontSizeCombo.SelectedItem is ComboBoxItem fi
+            && int.TryParse(fi.Content?.ToString(), out var fs) ? fs : 14;
+        _settings.WordWrap = WordWrapCheck.IsChecked ?? true;
 
         var newPath = WordlistPathBox.Text.Trim();
         if (newPath.Length > 0 && newPath != "默认词库（内嵌）" &&

@@ -46,7 +46,7 @@ public partial class WhitelistWindow : Window
 
     private void OnRemoveWord(object sender, RoutedEventArgs e)
     {
-        if (sender is Button button && button.CommandParameter is string word)
+        if (sender is Button button && button.Tag is string word)
         {
             _wordlist.RemoveFromWhitelist(word);
             RefreshList();
@@ -123,18 +123,10 @@ public partial class WhitelistWindow : Window
     {
         var items = _wordlist.Whitelist
             .OrderBy(w => w)
-            .Select(w => new { Text = w, RemoveCommand = new RelayCommand(word => _wordlist.RemoveFromWhitelist((string)word)) })
+            .Select(w => new { Text = w })
             .ToList();
 
         WhitelistItems.ItemsSource = items;
         EmptyLabel.Visibility = items.Count == 0 ? Visibility.Visible : Visibility.Collapsed;
-    }
-
-    // Simple relay command for remove buttons
-    private class RelayCommand(Action<object> execute) : System.Windows.Input.ICommand
-    {
-        public event EventHandler? CanExecuteChanged;
-        public bool CanExecute(object? parameter) => true;
-        public void Execute(object? parameter) => execute(parameter!);
     }
 }

@@ -44,6 +44,7 @@
   "suggestion.title": "Suggestions",
   "suggestion.replace": "Replace",
   "suggestion.no_suggestions": "No suggestions available",
+  "suggestion.no_match": "No similar words in vocabulary",
   "menu.copy_result": "Copy Result",
   "menu.copy_broadcast": "Copy Broadcast Text",
   "menu.reload_wordlist": "Reload Word List"

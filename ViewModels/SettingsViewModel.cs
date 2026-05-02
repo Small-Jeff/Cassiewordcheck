@@ -16,7 +16,10 @@ public partial class SettingsViewModel : ObservableObject
     private bool _ignoreChinese;
 
     [ObservableProperty]
-    private bool _ignoreAngleBrackets;
+    private bool _filterFormatting;
+
+    [ObservableProperty]
+    private bool _filterNaming;
 
     [ObservableProperty]
     private string _wordlistPath = "";
@@ -48,7 +51,8 @@ public partial class SettingsViewModel : ObservableObject
 
         // Load current values
         IgnoreChinese = _checker.IgnoreChinese;
-        IgnoreAngleBrackets = _checker.IgnoreAngleBrackets;
+        FilterFormatting = _checker.FilterFormatting;
+        FilterNaming = _checker.FilterNaming;
         WordlistPath = _settings.WordlistPath;
         WordlistPathLabel = WordlistPath;
 
@@ -82,7 +86,8 @@ public partial class SettingsViewModel : ObservableObject
     private void ResetDefaults()
     {
         IgnoreChinese = true;
-        IgnoreAngleBrackets = true;
+        FilterFormatting = true;
+        FilterNaming = true;
         WordlistPath = "";
         SelectedTheme = _localization["label.dark"];
     }
@@ -90,10 +95,12 @@ public partial class SettingsViewModel : ObservableObject
     public void Apply()
     {
         _checker.IgnoreChinese = IgnoreChinese;
-        _checker.IgnoreAngleBrackets = IgnoreAngleBrackets;
+        _checker.FilterFormatting = FilterFormatting;
+        _checker.FilterNaming = FilterNaming;
 
         _settings.IgnoreChinese = IgnoreChinese;
-        _settings.IgnoreAngleBrackets = IgnoreAngleBrackets;
+        _settings.FilterFormatting = FilterFormatting;
+        _settings.FilterNaming = FilterNaming;
 
         if (!string.IsNullOrWhiteSpace(WordlistPath) && WordlistPath != _settings.WordlistPath)
         {

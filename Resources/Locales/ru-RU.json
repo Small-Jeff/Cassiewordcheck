@@ -38,5 +38,6 @@
   "label.system": "Системная",
   "suggestion.title": "Предложения",
   "suggestion.replace": "Заменить",
-  "suggestion.no_suggestions": "Нет предложений"
+  "suggestion.no_suggestions": "Нет предложений",
+  "suggestion.no_match": "Нет похожих слов в словаре"
 }

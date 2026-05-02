@@ -157,11 +157,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "D:\\Project\\Project-C#\\CassieWordCheck\\CassieWordCheck.csproj",
+      "projectUniqueName": "d:\\Project\\Project-C#\\CassieWordCheck\\CassieWordCheck.csproj",
       "projectName": "CassieWordCheck",
-      "projectPath": "D:\\Project\\Project-C#\\CassieWordCheck\\CassieWordCheck.csproj",
+      "projectPath": "d:\\Project\\Project-C#\\CassieWordCheck\\CassieWordCheck.csproj",
       "packagesPath": "C:\\Users\\Jeff\\.nuget\\packages\\",
-      "outputPath": "D:\\Project\\Project-C#\\CassieWordCheck\\obj\\",
+      "outputPath": "d:\\Project\\Project-C#\\CassieWordCheck\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
         "C:\\Users\\Jeff\\AppData\\Roaming\\NuGet\\NuGet.Config"

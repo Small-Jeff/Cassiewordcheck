@@ -44,6 +44,7 @@
   "suggestion.title": "不可用词建议",
   "suggestion.replace": "替换",
   "suggestion.no_suggestions": "无可用建议",
+  "suggestion.no_match": "词库中无相近词",
   "menu.copy_result": "复制结果",
   "menu.copy_broadcast": "复制广播文本",
   "menu.reload_wordlist": "重新加载词库"

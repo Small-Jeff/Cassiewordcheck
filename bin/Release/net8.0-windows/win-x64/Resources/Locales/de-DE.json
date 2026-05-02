@@ -38,5 +38,6 @@
   "label.system": "System",
   "suggestion.title": "Vorschläge",
   "suggestion.replace": "Ersetzen",
-  "suggestion.no_suggestions": "Keine Vorschläge"
+  "suggestion.no_suggestions": "Keine Vorschläge",
+  "suggestion.no_match": "Keine ähnlichen Wörter im Vokabular"
 }

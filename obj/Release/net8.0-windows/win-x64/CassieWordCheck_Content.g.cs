@@ -14,5 +14,6 @@
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/locales/ko-kr.json")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/locales/ru-ru.json")]
 [assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("resources/locales/zh-cn.json")]
+[assembly: System.Windows.Resources.AssemblyAssociatedContentFileAttribute("qr.jpg")]
 
 
