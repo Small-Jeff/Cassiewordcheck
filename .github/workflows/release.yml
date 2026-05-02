@@ -32,20 +32,3 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: CASSIE CWC Tool（CASSIE Word Check）.zip
-          body: |
-            ## v${{ github.ref_name }} 更新内容
-
-            ### ⚡ 性能优化
-            - CheckText 不再被 GetStatistics 重复调用，每次输入检查少跑一遍全量分词
-            - 建议面板结果缓存（Levenshtein 编辑距离结果按词缓存，词库重载时自动清除）
-            - 键入缩放动画加 300ms 防抖，连续打字不再频繁触发
-
-            ### 🧹 代码质量
-            - 阵营/希腊字母匹配改为 HashSet O(1) 查找，取代原来的数组遍历
-            - IsIgnoredToken 合并冗余的 ToLowerInvariant 调用
-            - LocalizationService 抽取公共 ResolveLocalePath 方法，消除路径查找逻辑重复
-            - AboutWindow 头像路径改为多路径 fallback 查找
-            - 移除未使用的 global using
-
-            ### 🚀 其他
-            - 版本号升级至 ${{ github.ref_name }}
