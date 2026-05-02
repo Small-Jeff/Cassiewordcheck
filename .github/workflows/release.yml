@@ -32,4 +32,23 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: CassieWordCheck-v${{ github.ref_name }}.zip
-          generate_release_notes: true
+          body: |
+            ## v${{ github.ref_name }} 更新内容
+
+            ### 🛠 代码修复
+            - 修复 HexRegex 误伤纯数字的问题（要求十六进制至少含一个 a-f 字母）
+            - Clipbaord.SetText 增加 try-catch，避免剪贴板被占用时崩溃
+            - 修复 .csproj FileVersion 异常值
+            - 主题映射改用 switch 模式匹配，不再依赖本地化字符串作字典 key
+
+            ### 🧹 项目清理
+            - 移除冗余的 ViewModel 文件（MainViewModel / SettingsViewModel / WhitelistViewModel）
+            - 新增 .sln 解决方案文件，修复 Rider/VS 无法识别项目的问题
+
+            ### 📦 构建优化
+            - 单文件发布参数移至 Release 专属，Debug 不再多余打包
+            - 新增 GitHub Actions 自动构建工作流，推送 tag 自动编译打包上传
+            - 新增 publish.bat 一键构建脚本
+
+            ### 🚀 其他
+            - 版本号升级至 ${{ github.ref_name }}
