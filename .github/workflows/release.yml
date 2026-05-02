@@ -35,20 +35,17 @@ jobs:
           body: |
             ## v${{ github.ref_name }} 更新内容
 
-            ### 🛠 代码修复
-            - 修复 HexRegex 误伤纯数字的问题（要求十六进制至少含一个 a-f 字母）
-            - Clipbaord.SetText 增加 try-catch，避免剪贴板被占用时崩溃
-            - 修复 .csproj FileVersion 异常值
-            - 主题映射改用 switch 模式匹配，不再依赖本地化字符串作字典 key
+            ### ⚡ 性能优化
+            - CheckText 不再被 GetStatistics 重复调用，每次输入检查少跑一遍全量分词
+            - 建议面板结果缓存（Levenshtein 编辑距离结果按词缓存，词库重载时自动清除）
+            - 键入缩放动画加 300ms 防抖，连续打字不再频繁触发
 
-            ### 🧹 项目清理
-            - 移除冗余的 ViewModel 文件（MainViewModel / SettingsViewModel / WhitelistViewModel）
-            - 新增 .sln 解决方案文件，修复 Rider/VS 无法识别项目的问题
-
-            ### 📦 构建优化
-            - 单文件发布参数移至 Release 专属，Debug 不再多余打包
-            - 新增 GitHub Actions 自动构建工作流，推送 tag 自动编译打包上传
-            - 新增 publish.bat 一键构建脚本
+            ### 🧹 代码质量
+            - 阵营/希腊字母匹配改为 HashSet O(1) 查找，取代原来的数组遍历
+            - IsIgnoredToken 合并冗余的 ToLowerInvariant 调用
+            - LocalizationService 抽取公共 ResolveLocalePath 方法，消除路径查找逻辑重复
+            - AboutWindow 头像路径改为多路径 fallback 查找
+            - 移除未使用的 global using
 
             ### 🚀 其他
             - 版本号升级至 ${{ github.ref_name }}
