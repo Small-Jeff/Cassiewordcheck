@@ -19,19 +19,19 @@ jobs:
         with:
           dotnet-version: 8.0.x
 
-      - name: Build & Publish
-        run: dotnet publish CassieWordCheck.csproj -c Release -r win-x64 -o publish-output --verbosity quiet
+      - name: Build & Publish to dist
+        run: dotnet publish CassieWordCheck.csproj -c Release -r win-x64 -o dist --verbosity quiet
 
       - name: Clean debug symbols
-        run: Remove-Item "publish-output/*.pdb" -ErrorAction SilentlyContinue
+        run: Remove-Item "dist/*.pdb" -ErrorAction SilentlyContinue
 
       - name: Package zip
-        run: Compress-Archive -Path "publish-output/*" -DestinationPath "CassieWordCheck-v${{ github.ref_name }}.zip" -Force
+        run: Compress-Archive -Path "dist/*" -DestinationPath "CASSIE CWC Tool（CASSIE Word Check）.zip" -Force
 
       - name: Create Release & Upload
         uses: softprops/action-gh-release@v2
         with:
-          files: CassieWordCheck-v${{ github.ref_name }}.zip
+          files: CASSIE CWC Tool（CASSIE Word Check）.zip
           body: |
             ## v${{ github.ref_name }} 更新内容
 
