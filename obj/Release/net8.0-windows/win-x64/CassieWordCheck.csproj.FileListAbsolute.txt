@@ -21,7 +21,6 @@ D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\CassieW
 D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\CassieWordCheck.deps.json
 D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\CassieWordCheck.runtimeconfig.json
 D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\CassieWordCheck.dll
-D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\CassieWordCheck.pdb
 D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\CommunityToolkit.Mvvm.dll
 D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\Microsoft.CSharp.dll
 D:\Project\Project-C#\CassieWordCheck\bin\Release\net8.0-windows\win-x64\Microsoft.VisualBasic.Core.dll
@@ -487,11 +486,9 @@ D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieW
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWordCheck.AssemblyInfoInputs.cache
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWordCheck.AssemblyInfo.cs
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWordCheck.csproj.CoreCompileInputs.cache
-D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWordCheck.sourcelink.json
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWo.81CC94BA.Up2Date
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWordCheck.dll
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\refint\CassieWordCheck.dll
-D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWordCheck.pdb
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\CassieWordCheck.genruntimeconfig.cache
 D:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\ref\CassieWordCheck.dll
 d:\Project\Project-C#\CassieWordCheck\obj\Release\net8.0-windows\win-x64\Views\AboutWindow.baml

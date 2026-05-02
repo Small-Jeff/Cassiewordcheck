@@ -12,11 +12,11 @@ using System.Reflection;
 
 [assembly: System.Reflection.AssemblyCompanyAttribute("CassieWordCheck")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Release")]
-[assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0.0+6d51bc8d09741163727ea45f2edd1d7cc2937ddc")]
+[assembly: System.Reflection.AssemblyFileVersionAttribute("2.1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("2.1.0.0+eb7f74ccba0425c7419bf090ce4baea196168e14")]
 [assembly: System.Reflection.AssemblyProductAttribute("CassieWordCheck")]
 [assembly: System.Reflection.AssemblyTitleAttribute("CassieWordCheck")]
-[assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
+[assembly: System.Reflection.AssemblyVersionAttribute("2.1.0.0")]
 [assembly: System.Runtime.Versioning.TargetPlatformAttribute("Windows7.0")]
 [assembly: System.Runtime.Versioning.SupportedOSPlatformAttribute("Windows7.0")]
 
