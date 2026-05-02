@@ -28,3 +28,9 @@ appsettings*.json
 ## Temp scripts
 *.bat
 *.ps1
+
+## Publish outputs
+dist/
+CASSIE CWC Tool*.7z
+CASSIE CWC Tool*.zip
+CASSIE CWC Tool（CASSIE Word Check）/
