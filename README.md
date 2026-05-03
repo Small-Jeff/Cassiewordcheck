@@ -3,7 +3,7 @@
 [![.NET](https://img.shields.io/badge/.NET-8.0-512BD4)](https://dotnet.microsoft.com/)
 [![WPF](https://img.shields.io/badge/UI-WPF-512BD4)](https://github.com/dotnet/wpf)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/Version-2.3.0-blue)](https://github.com/Small-Jeff/Cassiewordcheck/releases)
+[![Version](https://img.shields.io/badge/Version-2.3.0-blue)](https://github.com/qingranawa/Cassiewordcheck/releases)
 
 **CASSIE Word Check** — 逐词比对 CASSIE 配音词库，标记可用/不可用单词，用于 **SCP: Secret Laboratory** 游戏 CASSIE 语音文本校对。
 
@@ -39,13 +39,13 @@
 
 ### 方法一：下载 Release（推荐）
 
-前往 [Releases 页面](https://github.com/Small-Jeff/Cassiewordcheck/releases) 下载最新版本的 `CassieWordCheck.exe`，直接运行即可。
+前往 [Releases 页面](https://github.com/qingranawa/Cassiewordcheck/releases) 下载最新版本的 `CassieWordCheck.exe`，直接运行即可。
 
 ### 方法二：自行构建
 
 ```bash
 # 克隆仓库
-git clone https://github.com/Small-Jeff/Cassiewordcheck.git
+git clone https://github.com/qingranawa/Cassiewordcheck.git
 cd CassieWordCheck
 
 # 恢复依赖 & 构建

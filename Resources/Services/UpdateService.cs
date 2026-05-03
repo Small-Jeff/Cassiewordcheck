@@ -6,7 +6,7 @@ namespace CassieWordCheck.Services;
 
 public class UpdateService
 {
-    private const string RepoOwner = "Small-Jeff";
+    private const string RepoOwner = "qingranawa";
     private const string RepoName = "Cassiewordcheck";
     private const string ApiUrl = "https://api.github.com/repos/" + RepoOwner + "/" + RepoName + "/releases/latest";
 

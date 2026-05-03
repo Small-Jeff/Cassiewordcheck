@@ -52,7 +52,7 @@ public partial class AboutWindow : Window
 
 - **版本**：2.3.0
 - **框架**：.NET 8 (WPF)
-- **仓库**：[github.com/Small-Jeff/Cassiewordcheck](https://github.com/Small-Jeff/Cassiewordcheck)
+- **仓库**：[github.com/qingranawa/Cassiewordcheck](https://github.com/qingranawa/Cassiewordcheck)
 
 ---
 

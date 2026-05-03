@@ -2,6 +2,36 @@
 
 欢迎贡献代码、提交 Issue 或提出改进建议！
 
+## 🍴 协作流程（Fork + Pull Request）
+
+本项目使用标准 GitHub 协作流程，贡献者**不会直接修改 main 分支**：
+
+1. **Fork** 本仓库到你的 GitHub 账号
+2. **Clone** 你的 Fork 到本地
+3. 创建**功能分支**进行开发
+4. 推送你的分支到你的 Fork
+5. 提交 **Pull Request** 到本仓库的 `main` 分支
+6. 审核通过后合并
+
+```bash
+# 1. Fork 后克隆你的版本
+git clone https://github.com/你的用户名/Cassiewordcheck.git
+cd CassieWordCheck
+
+# 2. 添加原仓库为上游（可选，用于同步更新）
+git remote add upstream https://github.com/qingranawa/Cassiewordcheck.git
+
+# 3. 创建功能分支
+git checkout -b feat/my-awesome-feature
+
+# 4. 开发、提交、推送
+git push origin feat/my-awesome-feature
+
+# 5. 在 GitHub 上提交 Pull Request
+```
+
+> 💡 只有仓库拥有者（qingranawa）和 Collaborators 才能直接推送 main 分支。
+
 ## 📋 报告问题
 
 提交 Issue 时请包含：
@@ -22,7 +52,7 @@
 ### 快速开始
 
 ```bash
-git clone https://github.com/Small-Jeff/Cassiewordcheck.git
+git clone https://github.com/qingranawa/Cassiewordcheck.git
 cd CassieWordCheck
 dotnet restore
 dotnet build
