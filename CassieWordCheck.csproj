@@ -8,8 +8,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <ApplicationIcon>data\AAA.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>2.3.0.0</Version>
-    <FileVersion>2.3.0.0</FileVersion>
+    <Version>2.3.1.0</Version>
+    <FileVersion>2.3.1.0</FileVersion>
     <AssemblyName>CassieWordCheck</AssemblyName>
     <RootNamespace>CassieWordCheck</RootNamespace>
     <Deterministic>true</Deterministic>

@@ -4,8 +4,6 @@
 
 ## 🍴 协作流程（Fork + Pull Request）
 
-本项目使用标准 GitHub 协作流程，贡献者**不会直接修改 main 分支**：
-
 1. **Fork** 本仓库到你的 GitHub 账号
 2. **Clone** 你的 Fork 到本地
 3. 创建**功能分支**进行开发
@@ -29,9 +27,6 @@ git push origin feat/my-awesome-feature
 
 # 5. 在 GitHub 上提交 Pull Request
 ```
-
-> 💡 只有仓库拥有者（qingranawa）和 Collaborators 才能直接推送 main 分支。
-
 ## 📋 报告问题
 
 提交 Issue 时请包含：
@@ -173,7 +168,7 @@ GitHub Actions 会自动编译、打包并上传到 Releases 页面。
 
 ## ✅ Pull Request 检查清单
 
-- [ ] 代码编译通过（0 警告 0 错误）
+- [ ] 代码编译通过
 - [ ] 遵循命名规范
 - [ ] 新增功能已添加本地化翻译 key
 - [ ] 已测试（如适用）

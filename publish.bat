@@ -2,69 +2,64 @@
 setlocal enabledelayedexpansion
 title CassieWordCheck Publish
 
-set "PROJ_DIR=%~dp0"
-set "PUBLISH_DIR=%PROJ_DIR%dist"
-set "APP_NAME=CassieWordCheck"
-set "RID=win-x64"
+set PROJ_DIR=%~dp0
+set PUBLISH_DIR=%PROJ_DIR%dist
+set APP_NAME=CassieWordCheck
+set RID=win-x64
 
 echo ========================================
 echo   CassieWordCheck - Publish Package
-echo   Output: %PUBLISH_DIR%
 echo   Runtime: %RID% (Self-contained)
 echo   Version: 2.3.0
-echo   Data folder: data\ (统一封装)
-echo   Features: 单实例 | 自动更新 | 统计面板 | 批量导入 | 多语言
 echo ========================================
 echo.
 
-REM Clean old dist
+where dotnet >nul 2>nul
+if %errorlevel% neq 0 (
+    echo [ERROR] dotnet not found.
+    pause
+    exit /b 1
+)
+
+pushd "%PROJ_DIR%"
+
 if exist "%PUBLISH_DIR%" (
-    echo [Clean] Removing old output directory...
-    rmdir /s /q "%PUBLISH_DIR%" || goto :err
+    echo [1/4] Cleaning...
+    rmdir /s /q "%PUBLISH_DIR%" 2>nul
 )
 
-echo [1/4] Restoring packages...
-call dotnet restore "%PROJ_DIR%%APP_NAME%.csproj" --verbosity quiet
+echo [2/4] Restoring...
+call dotnet restore "%APP_NAME%.csproj" --verbosity quiet
 if %errorlevel% neq 0 goto :err
 
-echo [2/4] Building Release...
-call dotnet build "%PROJ_DIR%%APP_NAME%.csproj" -c Release --verbosity quiet
+echo [3/4] Building...
+call dotnet build "%APP_NAME%.csproj" -c Release --verbosity quiet
 if %errorlevel% neq 0 goto :err
 
-echo [3/4] Publishing single-file...
-call dotnet publish "%PROJ_DIR%%APP_NAME%.csproj" -c Release -r %RID% -o "%PUBLISH_DIR%" --verbosity normal
+echo [4/4] Publishing...
+call dotnet publish "%APP_NAME%.csproj" -c Release -r %RID% -o "%PUBLISH_DIR%" --verbosity normal
 if %errorlevel% neq 0 goto :err
 
-echo [4/4] Verifying output structure...
-if exist "%PUBLISH_DIR%*.pdb" del /q "%PUBLISH_DIR%*.pdb" 2>nul
+if exist "%PUBLISH_DIR%\*.pdb" del /q "%PUBLISH_DIR%\*.pdb" 2>nul
 
-REM Show final dist structure
 echo.
-echo ====== Output structure ======
-if exist "%PUBLISH_DIR%CassieWordCheck.exe" (
-    echo   [exe]  CassieWordCheck.exe
-)
-if exist "%PUBLISH_DIR%data\" (
-    echo   [data] data\
-    dir /b "%PUBLISH_DIR%data\" 2>nul
-)
+echo ====== Output ======
+dir /b "%PUBLISH_DIR%data\" 2>nul
 if exist "%PUBLISH_DIR%Resources\" (
-    echo   [res]  Resources\Locales\
+    echo   [res] Resources\Locales\
 )
-echo ===============================
+echo ====================
 echo.
-echo ====== Done! Output in dist\ folder ======
+echo Done!
 echo.
 start "" "%PUBLISH_DIR%"
 goto :end
 
 :err
 echo.
-echo [FAILED] Error during packaging. Check output above.
+echo [FAILED]
 pause
 exit /b 1
 
 :end
-echo Press any key to exit...
-pause >nul
 endlocal

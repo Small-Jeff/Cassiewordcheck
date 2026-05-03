@@ -4,8 +4,13 @@ using System.Text.Json;
 
 namespace CassieWordCheck.Services;
 
+/// <summary>
+/// 自动更新——从 GitHub Releases API 检查新版本喵~
+/// 比较当前程序集版本和最新 Release 的 tag 版本喵！
+/// </summary>
 public class UpdateService
 {
+    // GitHub 仓库信息喵~
     private const string RepoOwner = "qingranawa";
     private const string RepoName = "Cassiewordcheck";
     private const string ApiUrl = "https://api.github.com/repos/" + RepoOwner + "/" + RepoName + "/releases/latest";
@@ -15,12 +20,15 @@ public class UpdateService
 
     public UpdateService()
     {
+        // 读取程序集版本号喵~
         var ver = Assembly.GetExecutingAssembly().GetName().Version;
         _currentVersion = ver ?? new Version(0, 0, 0);
     }
 
+    /// <summary>当前版本喵~</summary>
     public Version CurrentVersion => _currentVersion;
 
+    /// <summary>异步检查更新，返回更新信息（无更新或失败时返回 null）喵~</summary>
     public async Task<UpdateInfo?> CheckForUpdateAsync()
     {
         try
@@ -42,6 +50,7 @@ public class UpdateService
                 ? b.GetString() ?? ""
                 : "";
 
+            // 去掉 tag 的 "v" 前缀再解析版本号喵~
             var versionStr = tagName.TrimStart('v', 'V');
             if (!Version.TryParse(versionStr, out var latestVersion))
                 return null;
@@ -52,16 +61,17 @@ public class UpdateService
                 TagName = tagName,
                 HtmlUrl = htmlUrl,
                 ReleaseNotes = body,
-                HasUpdate = latestVersion > _currentVersion,
+                HasUpdate = latestVersion > _currentVersion, // 比较版本喵！
             };
         }
         catch
         {
-            return null;
+            return null; // 网络错误就安静返回 null 喵~
         }
     }
 }
 
+/// <summary>更新信息喵~</summary>
 public class UpdateInfo
 {
     public Version LatestVersion { get; init; } = new();

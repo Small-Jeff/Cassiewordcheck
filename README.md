@@ -39,7 +39,7 @@
 
 ### 方法一：下载 Release（推荐）
 
-前往 [Releases 页面](https://github.com/qingranawa/Cassiewordcheck/releases) 下载最新版本的 `CassieWordCheck.exe`，直接运行即可。
+前往 [Releases 页面](https://github.com/qingranawa/Cassiewordcheck/releases) 下载最新版本的 `CASSIE CWC Tool（CASSIE Word Check）.zip`，压缩后运行 `CassieWordCheck.exe` 即可。
 
 ### 方法二：自行构建
 
@@ -139,9 +139,8 @@ CassieWordCheck/
 
 ## 🙏 鸣谢
 
-- **Awni** — 词库支持与测试
-- **虚无** — 早期测试与反馈
-- 所有为项目提供建议和反馈的朋友
+- **Awni**
+- **虚无**
 
 ---
 

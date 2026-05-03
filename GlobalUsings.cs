@@ -1,3 +1,4 @@
+// 全局 using：所有文件自动引用，省去重复写 using 的麻烦喵~
 global using System;
 global using System.Collections.Generic;
 global using System.IO;

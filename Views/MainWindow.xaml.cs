@@ -17,9 +17,10 @@ public partial class MainWindow : Window
     private readonly Stack<string> _redoStack = new();
     private readonly HistoryStore _historyStore = new();
     private readonly DispatcherTimer _historyTimer = new();
+    private readonly DispatcherTimer _debounceTimer = new();
     private string _suggestionLabelOriginal = "";
     private bool _suppressAnimation;
-    private DateTime _lastBounceTime = DateTime.MinValue;
+    private int _bounceCount;
     // 历史快照缓存（每隔 3 分钟由 Timer 写入磁盘）
     private string _snapshotText = "";
     private string _snapshotResult = "";
@@ -58,6 +59,10 @@ public partial class MainWindow : Window
         _historyTimer.Interval = TimeSpan.FromMinutes(3);
         _historyTimer.Tick += OnHistoryTimerTick;
         _historyTimer.Start();
+
+        // 输入防抖（80ms 内连续输入只触发一次结果更新）
+        _debounceTimer.Interval = TimeSpan.FromMilliseconds(80);
+        _debounceTimer.Tick += OnDebounceTick;
     }
 
     // ── 入场动画（错峰播放，减少同时并发）─────────────────────────
@@ -138,9 +143,16 @@ public partial class MainWindow : Window
         catch { /* 静默 */ }
     }
 
-    // ── 输入变化 ─────────────────────────────────────────────────
+    // ── 输入变化（防抖：80ms 内连续输入只触发一次）──────────────
     private void OnInputTextChanged(object sender, TextChangedEventArgs e)
     {
+        _debounceTimer.Stop();
+        _debounceTimer.Start();
+    }
+
+    private void OnDebounceTick(object? sender, EventArgs e)
+    {
+        _debounceTimer.Stop();
         if (!_suppressAnimation)
             UpdateResult();
     }
@@ -180,6 +192,9 @@ public partial class MainWindow : Window
         AvailableLabel.Text = string.Format(_localization["stats.available"], available);
         UnavailableLabel.Text = string.Format(_localization["stats.unavailable"], unavailable);
         IgnoredLabel.Text = string.Format(_localization["stats.ignored"], ignored);
+        // 空文本时强制覆盖率为 0（Checker 默认返回 100）
+        if (text.Length == 0) coverage = 0;
+
         CoverageLabel.Text = $"{coverage:F1}%";
 
         // 缓存当前快照（Timer 每隔 3 分钟自动写入磁盘）
@@ -190,25 +205,21 @@ public partial class MainWindow : Window
         _snapshotIgnored = ignored;
         _snapshotCoverage = coverage;
 
-        // 进度条过渡
-        var scale = coverage / 100.0;
-        Animate(CoverageBar.RenderTransform, ScaleTransform.ScaleXProperty,
-            ((ScaleTransform)CoverageBar.RenderTransform).ScaleX, scale, 400, new QuadraticEase());
+        // 进度条过渡（按父容器宽度比例计算）
+        var parentWidth = ((FrameworkElement)CoverageBar.Parent).ActualWidth;
+        var targetWidth = Math.Max(2, parentWidth * coverage / 100.0);
+        Animate(CoverageBar, FrameworkElement.WidthProperty,
+            CoverageBar.ActualWidth, targetWidth, 400, new QuadraticEase());
 
-        // 输入实时同步 → 结果卡片"键入"微动（防抖：300ms 内不重复触发）
-        var now = DateTime.UtcNow;
-        if ((now - _lastBounceTime).TotalMilliseconds > 300)
+        // 结果卡片轻微反馈（仅前 5 次触发，避免反复缩放导致闪烁）
+        if (_bounceCount < 5)
         {
-            _lastBounceTime = now;
-
+            _bounceCount++;
             var resultGroup = (TransformGroup)ResultCard.RenderTransform;
             var resultScale = (ScaleTransform)resultGroup.Children[1];
-            ResultCard.RenderTransformOrigin = new Point(0.5, 0.5);
-
-            var typingBounce = new DoubleAnimation(1, 1.015, new Duration(TimeSpan.FromMilliseconds(80)))
+            var miniBounce = new DoubleAnimation(1, 1.008, new Duration(TimeSpan.FromMilliseconds(60)))
             { AutoReverse = true, EasingFunction = new QuadraticEase() };
-            resultScale.BeginAnimation(ScaleTransform.ScaleXProperty, typingBounce);
-            resultScale.BeginAnimation(ScaleTransform.ScaleYProperty, (DoubleAnimation)typingBounce.Clone());
+            resultScale.BeginAnimation(ScaleTransform.ScaleXProperty, miniBounce);
         }
 
         // 建议面板 + 卡片整体上移动画（清空/退格时跳过）
