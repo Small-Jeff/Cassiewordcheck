@@ -17,6 +17,8 @@ publish/
 .idea/
 Folder.DotSettings.user
 *.iml
+.run/
+.codebuddy/
 
 ## OS
 Thumbs.db
